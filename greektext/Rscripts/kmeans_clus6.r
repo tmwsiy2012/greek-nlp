@@ -1,0 +1,1 @@
+out = kmeans(data,center=6,nstart=10000); 
