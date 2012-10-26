@@ -52,6 +52,8 @@ public class Corpus {
         }
         Connection con = null;
         Statement stmt = null;
+        Connection con1 = null;
+        Statement stmt1 = null;        
         ResultSet rs = null;	 
         ResultSet result = null;
         try {
@@ -66,18 +68,43 @@ public class Corpus {
 	        	buf.append(result.getString(2)+' ');
 	        	name = result.getString(1);
 	        }
-	        if( name != null && buf.toString().length() > CU.minDocumentLength)
-	            returnvalue = new Manuscript(name,buf.toString(), "fam");
-	    
+	        TreeMap<Integer, String> tmpChapText = new TreeMap<Integer,String>();
+	        
+	        if( name != null && buf.toString().length() > CU.minDocumentLength){
+	        	con1 = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
+	        	tmpChapText = new TreeMap<Integer,String>();
+	        	for(int chap=1; chap<=25;chap++){
+	        		
+	    	        stmt1 = con1.createStatement();	        		
+	    	        rs = stmt1.executeQuery("select m.name,v.verse_text,v.chapternumber,v.versenumber from verse v inner join manuscript m on m.manuscriptid=v.manuscriptid where v.manuscriptid="+manuscriptid+" AND v.chapternumber="+chap+" order by v.chapternumber,v.versenumber;");
+	    	        StringBuffer chapBuf = new StringBuffer();
+	    	        String Tname = null;	
+	    	        while(rs.next()){
+	    	        	chapBuf.append(rs.getString(2)+' ');
+	    	        	Tname = rs.getString(1);
+	    	        }	
+	    	       // System.out.println(chapBuf.toString());
+	    	        if( chapBuf.toString().length() > 10 )	    	        
+	    	        tmpChapText.put(new Integer(chap), chapBuf.toString());
+	        	}
+	        	
+	        	
+	        	
+	        		
+	        }	        
+	        returnvalue = new Manuscript(manuscriptid,name,buf.toString(), "fam", tmpChapText);
+	        
 	} catch (Exception e) {
 	   e.printStackTrace();
 	   System.exit(0);
 	}finally{
 	    try {
 	        result.close();
+	        rs.close();
+	        con1.close();
 	        con.close();	
 	    } catch (Exception e2) {
-		e2.printStackTrace();
+		
 	    }
 	    
 	}	
@@ -105,10 +132,13 @@ public class Corpus {
 	        if(onlyOld)
 	            sql = CU.selectOldManuscriptsSQL;	        
 	        result = stmt.executeQuery(sql);
+	        int count=0;
 	        while (result.next()){
 	            manuscriptids.add(result.getInt(1));
+	            count++;
 	            //System.out.println("loaded "+result.getString(2));
 	        }
+	        System.out.println("loaded "+count+" manuscripts from db");
 	    
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -173,16 +203,16 @@ public class Corpus {
     	}
 
     }
-    public Manuscript getM(String str) {
-	return getManuscript(str);
-    }
+/*    public Manuscript getM(int mscriptID, String str, SortedMap<Integer,String> chapText) {
+	return getManuscript(mscriptID, str, chapText);
+    }*/
 
-    public Manuscript getManuscript(String str) {
+/*    public Manuscript getManuscript(int mscriptID,String str, SortedMap<Integer,String> chapText) {
 	if (!manuScripts.containsKey(str)) {
-	    manuScripts.put(str, new Manuscript(str, "", ""));
+	    manuScripts.put(str, new Manuscript(mscriptID,str, "", "", chapText));
 	}
 	return manuScripts.get(str);
-    }
+    }*/
 
     public SortedMap<String, Manuscript> getManuScripts() {
 	return manuScripts;
@@ -236,6 +266,7 @@ public class Corpus {
 	for (Map.Entry<String, Manuscript> m : manuScripts.entrySet()) {
 	    mergeMapCount(tmp, m.getValue().getCompositeGrams());
 	}
+	
 	SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
 	for (Map.Entry<String, Integer> gng : tmp.entrySet()) {
 	    int ngramcount =  tmp.get(gng.getKey()).intValue();
@@ -244,6 +275,21 @@ public class Corpus {
 	}
 	return returnValue;
     }    
+    public SortedMap<String, Integer> getGrandCompositeGrams(int chap) {
+	SortedMap<String, Integer> tmp = new TreeMap<String, Integer>();
+	for (Map.Entry<String, Manuscript> m : manuScripts.entrySet()) {
+	    mergeMapCount(tmp, m.getValue().getCompositeGrams(chap));
+	}
+	
+	SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
+	for (Map.Entry<String, Integer> gng : tmp.entrySet()) {
+	    int ngramcount =  tmp.get(gng.getKey()).intValue();
+	    if( ngramcount > CU.grandCompositeMinCount && ngramcount < (this.manuScripts.size()-CU.grandCompositeMaxOffset) )
+		returnValue.put(gng.getKey(),gng.getValue());
+	}
+	return returnValue;
+    }  
+    
     public SortedMap<String, Integer> getGrandNCharGrams(int size) {
 	SortedMap<String, Integer> tmp = new TreeMap<String, Integer>();
 	for (Map.Entry<String, Manuscript> m : manuScripts.entrySet()) {
@@ -347,6 +393,133 @@ public class Corpus {
 	    count++;
 	}
     }
+    public void calculateTF_IDF_CompositeGramWeights(SortedMap<String, Integer> tmpGrandCompositeGrams, int chap) {
+    	SortedMap<Integer, String> chapText = getChapDocs(chap);
+	double totalDocs = chapText.size();
+	resetTempWeights();
+	int count=0;
+	for (Map.Entry<String, Integer> grandCompositeGrams : tmpGrandCompositeGrams.entrySet()) {
+		//if( count % 25 ==0 )
+			//System.out.println("Processed "+count+" features.");
+	    double totalCountAcrossManuscripts = grandCompositeGrams.getValue().doubleValue();
+	    // System.out.println("totalAcrossAll manuscripts: "+totalCountAcrossManuscripts);
+	    for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
+	    Manuscript	m = getManuscriptAfter(manuscriptid.getKey());
+		// System.out.println(grandNGrams.getKey()+": "+ totalCountAcrossManuscripts);
+		double tf = 0;
+		if (m.getCompositeGrams(chap).containsKey(grandCompositeGrams.getKey())){
+		    tf = m.getCompositeGrams(chap).get(grandCompositeGrams.getKey()).doubleValue();
+		    //System.out.println("ngram" +grandNGrams.getKey() + "occurs in manuscript: "+m.getValue().getID()+" "+tf+" times");
+		}
+		double idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
+		m.getnGramWeight().put(grandCompositeGrams.getKey(), tf * idf);
+	    }
+	    count++;
+	}
+    }    
+    public void calculateNormalizedCompositeGramWeights(int chap, SortedMap<String, Integer> tmpGrandCompositeGrams) {
+    	SortedMap<Integer, String> chapText = getChapDocs(chap);
+    	for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
+    		Manuscript	m = getManuscriptAfter(manuscriptid.getKey());
+	    double len2 = 0;
+	   // System.out.println(m.getKey());
+	    for (Map.Entry<String, Integer> grandNCharGrams : tmpGrandCompositeGrams.entrySet()) {
+		len2 += m.getnGramWeight().get(grandNCharGrams.getKey())
+			.doubleValue()
+			* m.getnGramWeight()
+				.get(grandNCharGrams.getKey()).doubleValue();
+	    }
+	    double len = Math.sqrt(len2);
+	    for (Map.Entry<String, Integer> word : tmpGrandCompositeGrams.entrySet()) {
+		
+
+		    m.getnGramUnitWeight()
+			    .put(word.getKey(),
+				    m.getnGramWeight()
+					    .get(word.getKey()).doubleValue()
+					    / len);
+		
+	    }
+	    //System.out.println(m.getValue().getnGramUnitWeight());
+	}
+    }    
+    public void writeCurrentCosineMatrix(int chap,SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
+    	BufferedWriter out = null;
+    	try {
+            out = new BufferedWriter(new OutputStreamWriter
+            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
+	int i = 0, j = 0;
+	SortedMap<Integer, String> chapText = getChapDocs(chap);
+	for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
+		Manuscript	mi = getManuscriptAfter(manuscriptid.getKey());
+		 StringBuffer line= new StringBuffer(); 
+			for (Map.Entry<Integer, String> manuscriptidj : chapText.entrySet()) {
+				Manuscript	mj = getManuscriptAfter(manuscriptidj.getKey());
+		double charGramSum = 0;
+		for (Map.Entry<String, Integer> word : tmpGrandNCharGrams.entrySet()) {
+		    charGramSum += mi.getnGramUnitWeight()
+			    .get(word.getKey())
+			    * mj.getnGramUnitWeight()
+				    .get(word.getKey());
+		}
+		line.append(charGramSum+",");
+		
+	    }
+	    out.write(line.substring(0, line.length()-1)+CU.newline);
+	}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}finally{
+    		try {
+    			out.close();
+    		} catch (Exception e2) {}
+    	}	
+    }       
+    public void writeCurrentCosineMatrix(SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
+    	BufferedWriter out = null;
+    	try {
+            out = new BufferedWriter(new OutputStreamWriter
+            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
+	int i = 0, j = 0;
+	double charGramSum = 0;
+	for (Map.Entry<String, Manuscript> mi : this.manuScripts.entrySet()) {
+		 StringBuffer line= new StringBuffer(); 
+	    for (Map.Entry<String, Manuscript> mj : this.manuScripts.entrySet()) {
+		charGramSum = 0;
+		for (Map.Entry<String, Integer> word : tmpGrandNCharGrams.entrySet()) {
+		    charGramSum += mi.getValue().getnGramUnitWeight()
+			    .get(word.getKey())
+			    * mj.getValue().getnGramUnitWeight()
+				    .get(word.getKey());
+		}
+		line.append(charGramSum+",");
+		
+	    }
+	    out.write(line.substring(0, line.length()-1)+CU.newline);
+	}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}finally{
+    		try {
+    			out.close();
+    		} catch (Exception e2) {}
+    	}	
+    }      
+    private Manuscript getManuscriptAfter(int manuscriptid){
+    	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
+    		if( m.getValue().getManuscriptID() == manuscriptid)
+    			return m.getValue();
+    	}
+    	return null;
+    }
+    private SortedMap<Integer, String> getChapDocs(int chap){
+    	SortedMap<Integer, String> returnValue = new TreeMap<Integer, String>();
+    	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
+    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > 10)
+    			returnValue.put(m.getValue().getManuscriptID(), m.getValue().getText(chap));
+    	}
+    	return returnValue;
+    }
     public void calculateTF_IDF_NGramWeights(int size, SortedMap<String, Integer> tmpGrandNCharGrams) {
 	double totalDocs = this.manuScripts.size();
 	resetTempWeights();
@@ -437,8 +610,34 @@ public class Corpus {
 	    //System.out.println(m.getValue().getnGramUnitWeight());
 	}
     }    
+    public void calculateNormalizedCompositeGramWeights(SortedMap<String, Integer> tmpGrandCompositeGrams) {
 
-    public void writeCurrentNGramCosineMatrix(int size, SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
+	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
+	    double len2 = 0;
+	   // System.out.println(m.getKey());
+	    for (Map.Entry<String, Integer> grandNCharGrams : tmpGrandCompositeGrams.entrySet()) {
+		len2 += m.getValue().getnGramWeight().get(grandNCharGrams.getKey())
+			.doubleValue()
+			* m.getValue().getnGramWeight()
+				.get(grandNCharGrams.getKey()).doubleValue();
+	    }
+	    double len = Math.sqrt(len2);
+	    for (Map.Entry<String, Integer> word : tmpGrandCompositeGrams.entrySet()) {
+		
+
+		    m.getValue()
+			    .getnGramUnitWeight()
+			    .put(word.getKey(),
+				    m.getValue().getnGramWeight()
+					    .get(word.getKey()).doubleValue()
+					    / len);
+		
+	    }
+	    //System.out.println(m.getValue().getnGramUnitWeight());
+	}
+    }    
+
+/*    public void writeCurrentNGramCosineMatrix(int size, SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
     	BufferedWriter out = null;
     	try {
             out = new BufferedWriter(new OutputStreamWriter
@@ -468,37 +667,9 @@ public class Corpus {
     			out.close();
     		} catch (Exception e2) {}
     	}		
-    }
+    }*/
     
-    public void writeCurrentNCharGramCosineMatrix(int size, SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
-    	BufferedWriter out = null;
-    	try {
-            out = new BufferedWriter(new OutputStreamWriter
-            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
-	int i = 0, j = 0;
-	for (Map.Entry<String, Manuscript> mi : this.manuScripts.entrySet()) {
-		 StringBuffer line= new StringBuffer(); 
-	    for (Map.Entry<String, Manuscript> mj : this.manuScripts.entrySet()) {
-		double charGramSum = 0;
-		for (Map.Entry<String, Integer> word : tmpGrandNCharGrams.entrySet()) {
-		    charGramSum += mi.getValue().getnGramUnitWeight()
-			    .get(word.getKey())
-			    * mj.getValue().getnGramUnitWeight()
-				    .get(word.getKey());
-		}
-		line.append(charGramSum+",");
-		
-	    }
-	    out.write(line.substring(0, line.length()-1)+CU.newline);
-	}
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    	}finally{
-    		try {
-    			out.close();
-    		} catch (Exception e2) {}
-    	}	
-    }    
+  
     
     public void writeCurrentTFIDFFeatureMatrix( SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
     	
@@ -722,6 +893,14 @@ public class Corpus {
     public String[] getManuscriptLabels(){
     	return this.manuScripts.keySet().toArray(new String[0]);    	
     }
+    public String[] getManuscriptLabels(int chap){
+    	ArrayList<String> returnValue = new ArrayList<String>();
+    	for(Map.Entry<String, Manuscript> mj : this.manuScripts.entrySet()){
+    		if( mj.getValue().getText(chap).length() > 10 )
+    			returnValue.add(mj.getKey());
+    	}
+    	return returnValue.toArray(new String[0]);
+    }
 
     public String[] getTrainingManuscriptLabels(){
     	return this.trainingSet.toArray(new String[0]);    	
@@ -774,6 +953,7 @@ public class Corpus {
     	
     	return tmp.toArray(new String[0]);    	
     }     
+    
     public void printFamilies(int levelToMatch){
     	SortedMap<String,Integer> fams = getUniqueFamilies(levelToMatch);
     	SortedMap<String, ArrayList<String>> famlist = new TreeMap<String, ArrayList<String>>();    	

@@ -12,7 +12,7 @@ public class TestCharGrams {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false);
+/*		Corpus c = new Corpus(false);
 		int size=5;
 		SortedMap<String, Integer> tmpGrandCharGrams = c.getGrandNCharGrams(size);
 		
@@ -22,7 +22,7 @@ public class TestCharGrams {
 				//System.out.println("found non-size length feature: "+f.getKey());
 			
 		}
-		System.out.println("size: "+size+" totalTokens: "+tmpGrandCharGrams.size());
+		System.out.println("size: "+size+" totalTokens: "+tmpGrandCharGrams.size());*/
 	}
 
 }

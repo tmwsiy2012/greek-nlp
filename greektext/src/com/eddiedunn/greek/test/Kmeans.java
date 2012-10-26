@@ -2,6 +2,8 @@ package com.eddiedunn.greek.test;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -9,11 +11,12 @@ import rcaller.RCaller;
 import rcaller.RCode;
 
 import com.eddiedunn.util.CU;
+import com.eddiedunn.util.TreeMapArrayListLengthValueComparator;
 
 
 public class Kmeans {
 	
-	private SortedMap<String,String[]> results;
+	private ArrayList<String[]> results;
 	private int maxClusterSize;
     
     public static void main(String[] args){
@@ -24,12 +27,12 @@ public class Kmeans {
     
     public Kmeans(double[][] data, String[] labels, int numClusters){
     	try {
-    		  results = new TreeMap<String,String[]>();
+    		  results = new ArrayList<String[]>();
     		  maxClusterSize = 0;
     	      RCaller caller = new RCaller();
     	      RCode code = new RCode();
 
-    	      caller.setRscriptExecutable("C:\\Program Files\\R\\R-2.15.1\\bin\\i386\\Rscript.exe");
+    	      caller.setRscriptExecutable(CU.Rexecutable);
 
     	      
     	      //double[][] data = CU.readMatrixFromFile("3charGramCosineMatrix", labels.length);
@@ -44,7 +47,10 @@ public class Kmeans {
     	      caller.runAndReturnResult("clusters");
     	      
     	      int[] KMresults;
-    	      SortedMap<String,ArrayList<String>> tmpdata = new TreeMap<String,ArrayList<String>>(); 
+    	      HashMap<String,ArrayList<String>> tmpdata = new HashMap<String,ArrayList<String>>(); 
+      	      TreeMapArrayListLengthValueComparator tmalv = new TreeMapArrayListLengthValueComparator(tmpdata);
+      	      SortedMap<String,ArrayList<String>> sortedTmpdata = new TreeMap<String,ArrayList<String>>(tmalv); 
+      	    
     	      KMresults = caller.getParser().getAsIntArray("clusters");
     	    for (int i = 0; i < labels.length; i++) {
     	    	String family = String.format("%02d", KMresults[i]);
@@ -59,11 +65,13 @@ public class Kmeans {
     	    	}
 				
 			  }
-
-    	    for( SortedMap.Entry<String,ArrayList<String>> cluster : tmpdata.entrySet()) {
+    	    sortedTmpdata.putAll(tmpdata);
+    	    
+    	    for( Map.Entry<String,ArrayList<String>> cluster : sortedTmpdata.entrySet()) {
     	    	if( cluster.getValue().size() > maxClusterSize)
     	    		maxClusterSize = cluster.getValue().size();
-    	    	results.put(cluster.getKey(), cluster.getValue().toArray(new String[0]));
+    	    	System.out.println("cluster size after sort: "+cluster.getValue().size());
+    	    	results.add(cluster.getValue().toArray(new String[0]));
     	    }
 
     	    } catch (Exception e) {
@@ -71,7 +79,7 @@ public class Kmeans {
     	    }
     }
 
-	public SortedMap<String,String[]> getResults() {
+	public ArrayList<String[]> getResults() {
 		return results;
 	}
 

@@ -193,7 +193,7 @@ private void readData() {
 		}
 	}
 
-	public SortedMap<String, Manuscript> getManuScripts() {
+/*	public SortedMap<String, Manuscript> getManuScripts() {
 		SortedMap<String, Manuscript> manuScripts = new TreeMap<String, Manuscript>();
 		SortedMap<String, String> familys = this.getFamilies();
 		for (Map.Entry<String, StringBuffer> m : documents.entrySet()) {
@@ -209,7 +209,7 @@ private void readData() {
 		}
 
 		return manuScripts;
-	}
+	}*/
 	private SortedMap<String, String> getFamilies(){
 	    SortedMap<String, String> returnValue = new TreeMap<String, String>(); 
 	    

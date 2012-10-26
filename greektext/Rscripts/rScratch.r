@@ -15,10 +15,29 @@ compositedata <- as.matrix(read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\ou
 
 library(vegan)
 CompositeGramIDFFeatureMatrixFullOld.txt
+
+library(vegan)
 compfull <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\CompositeGramIDFFeatureMatrixFull.txt", header=FALSE)
-mlabels <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\manuscriptLabels.txt",what=character(),sep=",",nlines=1)
-clabels <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\compositeGramFeatureVectorFull.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
-data.dis <- vegdist(data)
-data.mds0 <- monoMDS(data.dis)
+compold <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\CompositeGramIDFFeatureMatrixFullOld.txt", header=FALSE)
+mlabelsOld <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\oldmanuscriptLabels.txt",what=character(),sep=",",nlines=1)
+mlabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\manuscriptLabels.txt",what=character(),sep=",",nlines=1)
+clabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\compositeGramFeatureVectorFull.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
+clabelsOld <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\compositeGramFeatureVectorFullOld.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
+rownames(compfull) <- mlabelsFull
+rownames(compold) <- mlabelsOld
+colnames(compfull) <- clabelsFull
+colnames(compold) <- clabelsOld
+compold.dist <- vegdist(compold)
+compfull.dist <- vegdist(compfull)
+compold.mds0 <- monoMDS(compold.dist)
+compfull.mds0 <- monoMDS(compfull.dist)
+compold.mds <- metaMDS(compold, trace=FALSE)
+compfull.mds <- metaMDS(compfull, trace=FALSE)
+compold.pca <- rda(compold)
+compfull.pca <- rda(compfull)
+compold.cca <- cca(compold)
+compfull.cca <- cca(compfull)
+save.image(file="c:\\users\\tmwsiy\\workspace\\greektext\\output\\dataBlob.RData")
+
 stressplot(data.mds0, data.dis)
 ordiplot(data.mds0, type="t")

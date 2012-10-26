@@ -63,7 +63,7 @@ public class RDataGeneratorOld {
 		System.out.println("finished calculate");
 		c.calculateNormalizedCharNGramWeights(size,tmpGrandNCharGrams);
 		System.out.println("finished normalize");
-		c.writeCurrentNCharGramCosineMatrix(size,tmpGrandNCharGrams, size+"charGramCosineMatrixOld");
+		c.writeCurrentCosineMatrix(tmpGrandNCharGrams, size+"charGramCosineMatrixOld");
 		System.out.println("finished");	    
 	}
 	public static void runNGramTF_IDFCosine(Corpus c, int size){
@@ -73,7 +73,7 @@ public class RDataGeneratorOld {
 		System.out.println("finished calculate");
 		c.calculateNormalizednGramWeights(size,tmpGrandNCharGrams);
 		System.out.println("finished normalize");
-		c.writeCurrentNGramCosineMatrix(size,tmpGrandNCharGrams, size+"NgramCosineMatrixOld");
+		c.writeCurrentCosineMatrix(tmpGrandNCharGrams, size+"NgramCosineMatrixOld");
 		System.out.println("finished");	    
 	}	
 

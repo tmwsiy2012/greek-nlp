@@ -53,6 +53,7 @@ public class CU {
 	public static final  int chargramMax=8;
 	public static final int grandCompositeMinCount=1;
 	public static final int grandCompositeMaxOffset=0;
+	public static String Rexecutable= "C:\\Program Files\\R\\R-2.13.1\\bin\\x64\\Rscript.exe";
 
 	public static  void writeMatrixToFile(double[][] matrixToWrite, String fileName){
 		BufferedWriter out = null;

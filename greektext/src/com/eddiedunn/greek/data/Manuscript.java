@@ -13,12 +13,17 @@ import com.eddiedunn.util.CU;
 public class Manuscript {
 	
 	private String id;
+	private int manuscriptID;
 	private String family;
 	private StringBuffer text;
+	private SortedMap<Integer,String> chapText;
 	private ArrayList<Verse> verses;
 	private SortedMap<String, Double> nGramWeight;
 	private SortedMap<String, Double> nGramUnitWeight;
 	private SortedMap<String, Integer> compositeGrams;
+	private SortedMap<Integer, SortedMap<String, Integer>> compositeGramsChap;
+	private SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> charGramsChap;
+	private SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> nGramsChap;
 	private SortedMap<Integer,SortedMap<String, Integer>> nGrams;
 	private SortedMap<Integer,SortedMap<String, Integer>> charGrams;
 	
@@ -27,8 +32,10 @@ public class Manuscript {
 
 
 	
-	public Manuscript(String id, String text, String family){
+	public Manuscript(int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){
+	    this.chapText=chapText;
 	    
+	    this.manuscriptID = manuscriptID;
 		this.id = id;
 		// remove all multiple spaces and replace with one
 		this.text = new StringBuffer(text.replaceAll("\\s{2,}", " ").trim());	
@@ -38,7 +45,7 @@ public class Manuscript {
 		
 		setNGrams();
 		setCharGrams();
-		
+		//System.out.println(id+" Total ngrams: "+nGrams.size()+" charGrams: "+nGrams.size()+" chap text len:"+chapText.size());
 		setCompositeGrams();
 	}
 
@@ -50,7 +57,21 @@ public class Manuscript {
 	public String getText(){
 		return text.toString().trim();
 	}
+	public String getText(int chap){
+		if( chapText.containsKey(new Integer(chap)))
+		return chapText.get(new Integer(chap)).toString().trim();
+		else
+			return "";
+	}	
 	
+	public int getManuscriptID() {
+		return manuscriptID;
+	}
+
+	public SortedMap<Integer, String> getChapText() {
+		return chapText;
+	}
+
 	public SortedMap<String, Double> getnGramWeight() {
 		return nGramWeight;
 	}
@@ -87,27 +108,55 @@ public class Manuscript {
 		}
 	}
 	private void setCompositeGrams(){
-		SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
+		SortedMap<String, Integer> globalGrams = new TreeMap<String, Integer>();
+		SortedMap<Integer, SortedMap<String, Integer>> tmpCompositeGramsChap = new TreeMap<Integer, SortedMap<String, Integer>>();
 		for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
-			mergeMapCount(returnValue, getNCharGrams(i));
+			mergeMapCount(globalGrams, getNCharGrams(i));
 		}
 		
 		for (int i = 1; i <=CU.ngramMax; i++) {
-			mergeMapCount(returnValue, getNGrams(i));
+			mergeMapCount(globalGrams, getNGrams(i));
 		}
-		this.compositeGrams = returnValue;
+		this.compositeGrams = globalGrams;
+		// now populate chapter composite grams
+		for( int chap=1; chap<=25;chap++){
+			globalGrams = new TreeMap<String, Integer>();
+		for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
+			if( getNCharGrams(i, chap).size() > 0)
+				mergeMapCount(globalGrams, getNCharGrams(i, chap));
+		}
+		
+		for (int i = 1; i <=CU.ngramMax; i++) {
+			if( getNGrams(i, chap).size() > 0)
+			mergeMapCount(globalGrams, getNGrams(i, chap));
+		}		
+		
+		tmpCompositeGramsChap.put(chap, globalGrams);
+		}
+		this.compositeGramsChap = tmpCompositeGramsChap;
 	}
 	public SortedMap<String, Integer> getCompositeGrams(){
 		return this.compositeGrams;		
 
 	}
+	public SortedMap<String, Integer> getCompositeGrams(int chap){
+		return this.compositeGramsChap.get(chap);		
+
+	}	
+	public boolean hasChapter(int chap){
+		if(chapText.get(new Integer(chap)) != null && getText(chap).length() > 10 )
+			return true;
+		else
+			return false;
+	}
 	private void setNGrams(){
 	    this.nGrams = new TreeMap<Integer,SortedMap<String, Integer>>();
 		String[] arr = getText().split("\\s+");
+		SortedMap<String, Integer> currentNGrams = new TreeMap<String, Integer>();
 		for (int size = 1; size <= CU.ngramMax; size++) {
 		    
 		
-		SortedMap<String, Integer> currentNGrams = new TreeMap<String, Integer>();
+		currentNGrams = new TreeMap<String, Integer>();
 		for (int i = 0; i < arr.length; i++) {			
 			if( i+(size-1) < arr.length ){		
 				String currentNGram = getNGram(arr,i,size);
@@ -121,7 +170,33 @@ public class Manuscript {
 		}
 		nGrams.put(new Integer(size), currentNGrams);
 		}
+		
+		SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> tmpNGramsChap = new TreeMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>>();		
+		for( int chap=1; chap<=25; chap++){
+			if( ! hasChapter(chap) )
+					continue;
+			arr = getText(chap).split("\\s+");
+			SortedMap<Integer,SortedMap<String, Integer>>	currentNGramsChap = new TreeMap<Integer, SortedMap<String, Integer>>();
+		for (int size = 1; size <= CU.ngramMax; size++) {
 		    
+			
+			currentNGrams = new TreeMap<String, Integer>();
+			for (int i = 0; i < arr.length; i++) {			
+				if( i+(size-1) < arr.length ){		
+					String currentNGram = getNGram(arr,i,size);
+					if( currentNGrams.containsKey(currentNGram)){
+						int tmp = currentNGrams.get(currentNGram).intValue() + 1;
+						currentNGrams.put(currentNGram, new Integer(tmp));					
+					}else{
+						currentNGrams.put(currentNGram, new Integer(1));
+					}
+				}
+			}
+			currentNGramsChap.put(new Integer(size), currentNGrams);
+			}	
+		tmpNGramsChap.put(new Integer(chap), currentNGramsChap);
+		}
+		this.nGramsChap = tmpNGramsChap;
 	}
 	private void setCharGrams(){
 	    this.charGrams = new TreeMap<Integer,SortedMap<String, Integer>>();
@@ -129,29 +204,72 @@ public class Manuscript {
 		for (int size = CU.chargramMin; size <= CU.chargramMax; size++) {
 		    
 		
-		SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
+		SortedMap<String, Integer> tmpCharGrams = new TreeMap<String, Integer>();
 		for (int i = 0; i < arr.length - size; i++) {
 		
 				String currentNCharGram = getNCharGram(arr,i,size);
 				if( currentNCharGram.length() != size){
 					System.out.println("wrong size chargram: "+currentNCharGram+"  size: "+currentNCharGram.length()+"index:"+i+" manuscript: "+this.id);
 				}
-				if( returnValue.containsKey(currentNCharGram)){
-					int tmp = returnValue.get(currentNCharGram).intValue() + 1;
-					returnValue.put(currentNCharGram, new Integer(tmp));					
+				if( tmpCharGrams.containsKey(currentNCharGram)){
+					int tmp = tmpCharGrams.get(currentNCharGram).intValue() + 1;
+					tmpCharGrams.put(currentNCharGram, new Integer(tmp));					
 				}else{
-					returnValue.put(currentNCharGram, new Integer(1));
+					tmpCharGrams.put(currentNCharGram, new Integer(1));
 				}
 			
 		}
-		charGrams.put(new Integer(size), returnValue);
+		charGrams.put(new Integer(size), tmpCharGrams);
 		}    
+		
+		//now do chapters
+		SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> tmpCharGramsChap = new TreeMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>>();
+		for(int chap=1; chap<=25;chap++){
+			if( ! hasChapter(chap) )
+				continue;
+			arr = getText(chap).toCharArray();
+			SortedMap<Integer,SortedMap<String, Integer>>	currentNGramsChap = new TreeMap<Integer, SortedMap<String, Integer>>();
+		for (int size = CU.chargramMin; size <= CU.chargramMax; size++) {
+		    
+			
+		SortedMap<String, Integer> tmpCharGrams = new TreeMap<String, Integer>();
+		for (int i = 0; i < arr.length - size; i++) {
+		
+				String currentNCharGram = getNCharGram(arr,i,size);
+				if( currentNCharGram.length() != size){
+					System.out.println("wrong size chargram: "+currentNCharGram+"  size: "+currentNCharGram.length()+"index:"+i+" manuscript: "+this.id);
+				}
+				if( tmpCharGrams.containsKey(currentNCharGram)){
+					int tmp = tmpCharGrams.get(currentNCharGram).intValue() + 1;
+					tmpCharGrams.put(currentNCharGram, new Integer(tmp));					
+				}else{
+					tmpCharGrams.put(currentNCharGram, new Integer(1));
+				}
+			
+		}
+		currentNGramsChap.put(new Integer(size), tmpCharGrams);
+		}  
+		tmpCharGramsChap.put(new Integer(chap), currentNGramsChap);
+		}
+		charGramsChap = tmpCharGramsChap;
 	}
 	public SortedMap<String, Integer> getNGrams(int size){
 	    return this.nGrams.get(new Integer(size));
 	}
+	public SortedMap<String, Integer> getNGrams(int size, int chap){
+		if( this.nGramsChap.containsKey(new Integer(chap)) && this.nGramsChap.get(new Integer(chap)).containsKey(new Integer(size)))
+	    return this.nGramsChap.get(new Integer(chap)).get(new Integer(size));
+		else
+			return new TreeMap<String, Integer>();		
+	}	
 	public SortedMap<String, Integer> getNCharGrams(int size){
 	    return this.charGrams.get(new Integer(size));
+	}	
+	public SortedMap<String, Integer> getNCharGrams(int size, int chap){
+		if( this.charGramsChap.containsKey(new Integer(chap)) && this.charGramsChap.get(new Integer(chap)).containsKey(new Integer(size)))
+	    return this.charGramsChap.get(new Integer(chap)).get(new Integer(size));
+		else
+			return new TreeMap<String, Integer>();
 	}	
 	private String getNCharGram(char[] arr, int start, int size) {
 		StringBuffer retVal = new StringBuffer();
