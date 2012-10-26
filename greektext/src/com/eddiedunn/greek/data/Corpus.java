@@ -23,9 +23,11 @@ public class Corpus {
     private ArrayList<String> trainingSet;
     private ArrayList<String> testingSet;
     private ArrayList<String> fullDataSet;
+    private boolean loadChapters;
     
 
-    public Corpus(boolean onlyOld) {
+    public Corpus(boolean onlyOld, boolean loadChapters) {
+    this.loadChapters=loadChapters;
 	loadManuscriptsFromDB(getManuscriptIDs(onlyOld));
 	createTrainTestSets(.5); // percent training
     }
@@ -70,7 +72,7 @@ public class Corpus {
 	        }
 	        TreeMap<Integer, String> tmpChapText = new TreeMap<Integer,String>();
 	        
-	        if( name != null && buf.toString().length() > CU.minDocumentLength){
+	        if(loadChapters && name != null && buf.toString().length() > CU.minDocumentLength){
 	        	con1 = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        	tmpChapText = new TreeMap<Integer,String>();
 	        	for(int chap=1; chap<=25;chap++){
@@ -92,7 +94,7 @@ public class Corpus {
 	        	
 	        		
 	        }	        
-	        returnvalue = new Manuscript(manuscriptid,name,buf.toString(), "fam", tmpChapText);
+	        returnvalue = new Manuscript(loadChapters, manuscriptid,name,buf.toString(), "fam", tmpChapText);
 	        
 	} catch (Exception e) {
 	   e.printStackTrace();
@@ -138,7 +140,7 @@ public class Corpus {
 	            count++;
 	            //System.out.println("loaded "+result.getString(2));
 	        }
-	        System.out.println("loaded "+count+" manuscripts from db");
+	        //System.out.println("loaded "+count+" manuscripts from db");
 	    
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -375,19 +377,22 @@ public class Corpus {
 	double totalDocs = this.manuScripts.size();
 	resetTempWeights();
 	int count=0;
+	double tf = 0;
+	double idf = 0;
+	double totalCountAcrossManuscripts = 0;		
 	for (Map.Entry<String, Integer> grandCompositeGrams : tmpGrandCompositeGrams.entrySet()) {
 		//if( count % 25 ==0 )
 			//System.out.println("Processed "+count+" features.");
-	    double totalCountAcrossManuscripts = grandCompositeGrams.getValue().doubleValue();
+	    totalCountAcrossManuscripts = grandCompositeGrams.getValue().doubleValue();
 	    // System.out.println("totalAcrossAll manuscripts: "+totalCountAcrossManuscripts);
 	    for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
 		// System.out.println(grandNGrams.getKey()+": "+ totalCountAcrossManuscripts);
-		double tf = 0;
+		tf = 0;
 		if (m.getValue().getCompositeGrams().containsKey(grandCompositeGrams.getKey())){
 		    tf = m.getValue().getCompositeGrams().get(grandCompositeGrams.getKey()).doubleValue();
 		    //System.out.println("ngram" +grandNGrams.getKey() + "occurs in manuscript: "+m.getValue().getID()+" "+tf+" times");
 		}
-		double idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
+		idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
 		m.getValue().getnGramWeight().put(grandCompositeGrams.getKey(), tf * idf);
 	    }
 	    count++;
@@ -398,30 +403,35 @@ public class Corpus {
 	double totalDocs = chapText.size();
 	resetTempWeights();
 	int count=0;
+	double tf = 0;
+	double idf = 0;
+	double totalCountAcrossManuscripts = 0;	
 	for (Map.Entry<String, Integer> grandCompositeGrams : tmpGrandCompositeGrams.entrySet()) {
 		//if( count % 25 ==0 )
 			//System.out.println("Processed "+count+" features.");
-	    double totalCountAcrossManuscripts = grandCompositeGrams.getValue().doubleValue();
+	    totalCountAcrossManuscripts = grandCompositeGrams.getValue().doubleValue();
 	    // System.out.println("totalAcrossAll manuscripts: "+totalCountAcrossManuscripts);
 	    for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
 	    Manuscript	m = getManuscriptAfter(manuscriptid.getKey());
 		// System.out.println(grandNGrams.getKey()+": "+ totalCountAcrossManuscripts);
-		double tf = 0;
+		tf = 0;
 		if (m.getCompositeGrams(chap).containsKey(grandCompositeGrams.getKey())){
 		    tf = m.getCompositeGrams(chap).get(grandCompositeGrams.getKey()).doubleValue();
 		    //System.out.println("ngram" +grandNGrams.getKey() + "occurs in manuscript: "+m.getValue().getID()+" "+tf+" times");
 		}
-		double idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
+		idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
 		m.getnGramWeight().put(grandCompositeGrams.getKey(), tf * idf);
 	    }
 	    count++;
 	}
     }    
     public void calculateNormalizedCompositeGramWeights(int chap, SortedMap<String, Integer> tmpGrandCompositeGrams) {
+    	double len2 = 0;
+    	double len = 0;
     	SortedMap<Integer, String> chapText = getChapDocs(chap);
     	for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
     		Manuscript	m = getManuscriptAfter(manuscriptid.getKey());
-	    double len2 = 0;
+	    len2 = 0;
 	   // System.out.println(m.getKey());
 	    for (Map.Entry<String, Integer> grandNCharGrams : tmpGrandCompositeGrams.entrySet()) {
 		len2 += m.getnGramWeight().get(grandNCharGrams.getKey())
@@ -429,7 +439,7 @@ public class Corpus {
 			* m.getnGramWeight()
 				.get(grandNCharGrams.getKey()).doubleValue();
 	    }
-	    double len = Math.sqrt(len2);
+	    len = Math.sqrt(len2);
 	    for (Map.Entry<String, Integer> word : tmpGrandCompositeGrams.entrySet()) {
 		
 
@@ -450,12 +460,13 @@ public class Corpus {
             		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
 	int i = 0, j = 0;
 	SortedMap<Integer, String> chapText = getChapDocs(chap);
+	double charGramSum = 0;
 	for (Map.Entry<Integer, String> manuscriptid : chapText.entrySet()) {
 		Manuscript	mi = getManuscriptAfter(manuscriptid.getKey());
 		 StringBuffer line= new StringBuffer(); 
 			for (Map.Entry<Integer, String> manuscriptidj : chapText.entrySet()) {
 				Manuscript	mj = getManuscriptAfter(manuscriptidj.getKey());
-		double charGramSum = 0;
+		charGramSum = 0;
 		for (Map.Entry<String, Integer> word : tmpGrandNCharGrams.entrySet()) {
 		    charGramSum += mi.getnGramUnitWeight()
 			    .get(word.getKey())
@@ -522,18 +533,21 @@ public class Corpus {
     }
     public void calculateTF_IDF_NGramWeights(int size, SortedMap<String, Integer> tmpGrandNCharGrams) {
 	double totalDocs = this.manuScripts.size();
+	double tf = 0;
+	double idf = 0;
+	double totalCountAcrossManuscripts = 0;
 	resetTempWeights();
 	for (Map.Entry<String, Integer> grandNGrams : tmpGrandNCharGrams.entrySet()) {
-	    double totalCountAcrossManuscripts = grandNGrams.getValue().doubleValue();
+	    totalCountAcrossManuscripts = grandNGrams.getValue().doubleValue();
 	    // System.out.println("totalAcrossAll manuscripts: "+totalCountAcrossManuscripts);
 	    for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
 		// System.out.println(grandNGrams.getKey()+": "+ totalCountAcrossManuscripts);
-		double tf = 0;
+		tf = 0;
 		if (m.getValue().getNGrams(size).containsKey(grandNGrams.getKey())){
 		    tf = m.getValue().getNGrams(size).get(grandNGrams.getKey()).doubleValue();
 		    //System.out.println("ngram" +grandNGrams.getKey() + "occurs in manuscript: "+m.getValue().getID()+" "+tf+" times");
 		}
-		double idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
+		idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
 		m.getValue().getnGramWeight().put(grandNGrams.getKey(), tf * idf);
 	    }
 	    
@@ -541,26 +555,31 @@ public class Corpus {
     }
     public void calculateTF_IDF_CharNGramWeights(int size, SortedMap<String, Integer> tmpGrandNCharGrams) {
 	double totalDocs = this.manuScripts.size();
+	double tf = 0;
+	double idf = 0;
 	resetTempWeights();
+	 double totalCountAcrossManuscripts = 0;
 	for (Map.Entry<String, Integer> grandCharNGrams : tmpGrandNCharGrams.entrySet()) {
-	    double totalCountAcrossManuscripts = grandCharNGrams.getValue().doubleValue();
+	    totalCountAcrossManuscripts = grandCharNGrams.getValue().doubleValue();
 	    // System.out.println("totalAcrossAll manuscripts: "+totalCountAcrossManuscripts);
 	    for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
 		// System.out.println(grandNGrams.getKey()+": "+ totalCountAcrossManuscripts);
-		double tf = 0;
+		tf = 0;
 		if (m.getValue().getNCharGrams(size).containsKey(grandCharNGrams.getKey())){
 		    tf = m.getValue().getNCharGrams(size).get(grandCharNGrams.getKey()).doubleValue();
 		    //System.out.println("ngram" +grandNGrams.getKey() + "occurs in manuscript: "+m.getValue().getID()+" "+tf+" times");
 		}
-		double idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
+		 idf = Math.log(totalDocs / totalCountAcrossManuscripts)/ Math.log(2);
 		m.getValue().getnGramWeight().put(grandCharNGrams.getKey(), tf * idf);
 	    }
 	    
 	}
     }
     public void calculateNormalizednGramWeights(int size, SortedMap<String, Integer> tmpGrandNCharGrams) {
+    	double len2 = 0;
+    	double len = 0;
 	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
-	    double len2 = 0;
+	    len2 = 0;
 	   // System.out.println(m.getKey());
 	    for (Map.Entry<String, Integer> grandNGrams : tmpGrandNCharGrams.entrySet()) {
 		len2 += m.getValue().getnGramWeight().get(grandNGrams.getKey())
@@ -568,7 +587,7 @@ public class Corpus {
 			* m.getValue().getnGramWeight()
 				.get(grandNGrams.getKey()).doubleValue();
 	    }
-	    double len = Math.sqrt(len2);
+	    len = Math.sqrt(len2);
 	    for (Map.Entry<String, Integer> word : this.getGrandNGrams(size)
 		    .entrySet()) {
 		
@@ -585,9 +604,10 @@ public class Corpus {
 	}
     }
     public void calculateNormalizedCharNGramWeights(int size, SortedMap<String, Integer> tmpGrandNCharGrams) {
-
+    	 double len2 = 0;
+    	 double len = 0;
 	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
-	    double len2 = 0;
+		len2 = 0;
 	   // System.out.println(m.getKey());
 	    for (Map.Entry<String, Integer> grandNCharGrams : tmpGrandNCharGrams.entrySet()) {
 		len2 += m.getValue().getnGramWeight().get(grandNCharGrams.getKey())
@@ -595,7 +615,7 @@ public class Corpus {
 			* m.getValue().getnGramWeight()
 				.get(grandNCharGrams.getKey()).doubleValue();
 	    }
-	    double len = Math.sqrt(len2);
+	     len = Math.sqrt(len2);
 	    for (Map.Entry<String, Integer> word : tmpGrandNCharGrams.entrySet()) {
 		
 
@@ -612,8 +632,10 @@ public class Corpus {
     }    
     public void calculateNormalizedCompositeGramWeights(SortedMap<String, Integer> tmpGrandCompositeGrams) {
 
+    	double len = 0;
+    	 double len2 = 0;
 	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
-	    double len2 = 0;
+	    len2 = 0;
 	   // System.out.println(m.getKey());
 	    for (Map.Entry<String, Integer> grandNCharGrams : tmpGrandCompositeGrams.entrySet()) {
 		len2 += m.getValue().getnGramWeight().get(grandNCharGrams.getKey())
@@ -621,7 +643,7 @@ public class Corpus {
 			* m.getValue().getnGramWeight()
 				.get(grandNCharGrams.getKey()).doubleValue();
 	    }
-	    double len = Math.sqrt(len2);
+	    len = Math.sqrt(len2);
 	    for (Map.Entry<String, Integer> word : tmpGrandCompositeGrams.entrySet()) {
 		
 

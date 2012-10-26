@@ -5,8 +5,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import com.eddiedunn.greek.data.Corpus;
-import com.eddiedunn.greek.data.DataReader;
-import com.eddiedunn.greek.data.Manuscript;
+
 import com.eddiedunn.util.CU;
 
 public class RDataGenerator {
@@ -17,7 +16,7 @@ public class RDataGenerator {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//Corpus c = new Corpus((new DataReader()).getManuScripts());
-		Corpus c = new Corpus(false);
+		Corpus c = new Corpus(false,false);
 		System.out.println("created Corpus");
 
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");

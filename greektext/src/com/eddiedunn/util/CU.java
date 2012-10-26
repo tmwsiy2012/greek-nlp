@@ -13,8 +13,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.SortedMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
@@ -22,8 +21,12 @@ import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
-import com.eddiedunn.greek.data.Manuscript;
 import com.eddiedunn.greek.data.VerseFile;
+
+
+
+
+
 
 public class CU {
 
@@ -398,6 +401,31 @@ public static boolean checkVerseString(String stringToCheck){
 		return returnValue;
 	}	
 
+	public static String[] readStringVectorFromFile(String fileName){
+		BufferedReader in = null;
+		String[] returnValue = new String[0];
+		try {
+	        in = new BufferedReader(new InputStreamReader
+	        		(new FileInputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+			String line=in.readLine();
+			
+			String[] tokens = line.split(",");
+			returnValue = new String[tokens.length];
+			for (int i = 0; i < tokens.length; i++) {
+				//System.out.println(k+": "+i+" tokens.length: "+tokens.length);
+				returnValue[i] = tokens[i];
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				in.close();
+			} catch (Exception e2) {}
+		}	
+			
+		return returnValue;
+		
+	}
 
 
 	public static void printMatrix(double[][] matrixToPrint){

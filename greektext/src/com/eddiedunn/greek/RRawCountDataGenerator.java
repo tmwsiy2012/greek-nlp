@@ -11,7 +11,7 @@ public class RRawCountDataGenerator {
     public static void main(String[] args) {
 	
 	boolean onlyOld = false;
-	Corpus c = new Corpus(onlyOld);
+	Corpus c = new Corpus(onlyOld,false);
 	
 	 boolean isWord =true; // true for ngrams false for char sequences
     int sizeOfFeature=1;

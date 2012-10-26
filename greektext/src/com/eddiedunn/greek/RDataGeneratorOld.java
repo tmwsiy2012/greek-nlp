@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import com.eddiedunn.greek.data.Corpus;
-import com.eddiedunn.greek.data.DataReader;
-import com.eddiedunn.greek.data.Manuscript;
+
 import com.eddiedunn.util.CU;
+
 
 public class RDataGeneratorOld {
 
@@ -16,7 +16,7 @@ public class RDataGeneratorOld {
 	 */
 	public static void main(String[] args) {
 
-		Corpus c = new Corpus(true);
+		Corpus c = new Corpus(true,false);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
 		generateData(c);
@@ -34,6 +34,7 @@ public class RDataGeneratorOld {
 		    runNCharGramTF_IDFFeature(c,i);
 		    System.out.println("finished nChargram run i="+i);
 		}
+		
 		
 	}	
 	public static void runNGramTF_IDFFeature(Corpus c, int size){

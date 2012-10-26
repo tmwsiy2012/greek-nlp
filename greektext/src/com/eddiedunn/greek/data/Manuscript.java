@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import com.eddiedunn.util.CU;
 
+
 public class Manuscript {
 	
 	private String id;
@@ -26,15 +27,16 @@ public class Manuscript {
 	private SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> nGramsChap;
 	private SortedMap<Integer,SortedMap<String, Integer>> nGrams;
 	private SortedMap<Integer,SortedMap<String, Integer>> charGrams;
+	private boolean loadChapters;
 	
 
 	
 
 
 	
-	public Manuscript(int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){
+	public Manuscript(boolean loadChapters,int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){
 	    this.chapText=chapText;
-	    
+	    this.loadChapters=loadChapters;
 	    this.manuscriptID = manuscriptID;
 		this.id = id;
 		// remove all multiple spaces and replace with one
@@ -119,6 +121,7 @@ public class Manuscript {
 		}
 		this.compositeGrams = globalGrams;
 		// now populate chapter composite grams
+		if( loadChapters){
 		for( int chap=1; chap<=25;chap++){
 			globalGrams = new TreeMap<String, Integer>();
 		for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
@@ -134,6 +137,7 @@ public class Manuscript {
 		tmpCompositeGramsChap.put(chap, globalGrams);
 		}
 		this.compositeGramsChap = tmpCompositeGramsChap;
+		}
 	}
 	public SortedMap<String, Integer> getCompositeGrams(){
 		return this.compositeGrams;		
@@ -170,7 +174,7 @@ public class Manuscript {
 		}
 		nGrams.put(new Integer(size), currentNGrams);
 		}
-		
+		if( loadChapters){
 		SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> tmpNGramsChap = new TreeMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>>();		
 		for( int chap=1; chap<=25; chap++){
 			if( ! hasChapter(chap) )
@@ -196,7 +200,9 @@ public class Manuscript {
 			}	
 		tmpNGramsChap.put(new Integer(chap), currentNGramsChap);
 		}
+	
 		this.nGramsChap = tmpNGramsChap;
+		}
 	}
 	private void setCharGrams(){
 	    this.charGrams = new TreeMap<Integer,SortedMap<String, Integer>>();
@@ -222,7 +228,7 @@ public class Manuscript {
 		charGrams.put(new Integer(size), tmpCharGrams);
 		}    
 		
-		//now do chapters
+		if( loadChapters){
 		SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> tmpCharGramsChap = new TreeMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>>();
 		for(int chap=1; chap<=25;chap++){
 			if( ! hasChapter(chap) )
@@ -252,6 +258,7 @@ public class Manuscript {
 		tmpCharGramsChap.put(new Integer(chap), currentNGramsChap);
 		}
 		charGramsChap = tmpCharGramsChap;
+		}
 	}
 	public SortedMap<String, Integer> getNGrams(int size){
 	    return this.nGrams.get(new Integer(size));
