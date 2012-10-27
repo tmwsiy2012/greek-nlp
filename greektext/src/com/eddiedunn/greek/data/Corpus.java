@@ -24,10 +24,12 @@ public class Corpus {
     private ArrayList<String> testingSet;
     private ArrayList<String> fullDataSet;
     private boolean loadChapters;
+    private boolean removeOutliers;
     
 
-    public Corpus(boolean onlyOld, boolean loadChapters) {
+    public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
     this.loadChapters=loadChapters;
+    this.removeOutliers = removeOutliers;
 	loadManuscriptsFromDB(getManuscriptIDs(onlyOld));
 	createTrainTestSets(.5); // percent training
     }
@@ -131,6 +133,8 @@ public class Corpus {
 	        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        stmt = con.createStatement();
 	        String sql = CU.selectAllManuscriptsSQL;
+	        if(removeOutliers)
+	        	sql = CU.selectAllManuscriptsRemoveOutliersSQL;
 	        if(onlyOld)
 	            sql = CU.selectOldManuscriptsSQL;	        
 	        result = stmt.executeQuery(sql);
@@ -278,6 +282,7 @@ public class Corpus {
 	    if( ngramcount > CU.grandCompositeMinCount && ngramcount < (this.manuScripts.size()-CU.grandCompositeMaxOffset) )
 		returnValue.put(gng.getKey(),gng.getValue());
 	}
+	//CU.pruneMap(returnValue);
 	return returnValue;
     }    
     public SortedMap<String, Integer> getGrandCompositeGrams(int chap) {
@@ -292,6 +297,7 @@ public class Corpus {
 	    if( ngramcount > CU.grandCompositeMinCount && ngramcount < (this.manuScripts.size()-CU.grandCompositeMaxOffset) )
 		returnValue.put(gng.getKey(),gng.getValue());
 	}
+	//CU.pruneMap(returnValue);
 	return returnValue;
     }  
     
@@ -306,6 +312,7 @@ public class Corpus {
 	    if( ngramcount > 1 && ngramcount < this.manuScripts.size())
 		returnValue.put(gng.getKey(),gng.getValue());
 	}
+	//CU.pruneMap(returnValue);
 	return returnValue;
     }
     public SortedMap<String, Integer> getTrainingGrandNCharGrams(int size) {
@@ -319,6 +326,7 @@ public class Corpus {
 	    if( ngramcount > 1 && ngramcount < this.trainingSet.size())
 		returnValue.put(gng.getKey(),gng.getValue());
 	}
+	//CU.pruneMap(returnValue);
 	return returnValue;
     }
 

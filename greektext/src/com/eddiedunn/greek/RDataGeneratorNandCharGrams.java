@@ -8,7 +8,7 @@ import com.eddiedunn.greek.data.Corpus;
 
 import com.eddiedunn.util.CU;
 
-public class RDataGenerator {
+public class RDataGeneratorNandCharGrams {
 
 	/**
 	 * @param args
@@ -16,7 +16,9 @@ public class RDataGenerator {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//Corpus c = new Corpus((new DataReader()).getManuScripts());
-		Corpus c = new Corpus(false,false);
+		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
+		Corpus c = new Corpus(false,true,false);
+		//Corpus c = new Corpus(false,true,false);
 		System.out.println("created Corpus");
 
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");

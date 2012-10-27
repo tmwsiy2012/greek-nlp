@@ -16,7 +16,7 @@ public class RDataGeneratorOld {
 	 */
 	public static void main(String[] args) {
 
-		Corpus c = new Corpus(true,false);
+		Corpus c = new Corpus(true,false,false);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
 		generateData(c);

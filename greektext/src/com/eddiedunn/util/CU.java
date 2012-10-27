@@ -32,7 +32,8 @@ public class CU {
 
 
 	public static final String newline = System.getProperty("line.separator");
-	public static final String selectAllManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' order by name";
+	public static final String selectAllManuscriptsRemoveOutliersSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('094','620','621','631','704','807') order by name";
+	public static final String selectAllManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('807') order by name";
 	public static final String selectOldManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name in ('031','041','061','081','083','091','092','093','094','001','002','003','004','005','006','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118') order by name";
 	
 	public static final String db_connstr = "jdbc:mysql://localhost:3306/greektext";
@@ -58,6 +59,30 @@ public class CU {
 	public static final int grandCompositeMaxOffset=0;
 	public static String Rexecutable= "C:\\Program Files\\R\\R-2.13.1\\bin\\x64\\Rscript.exe";
 
+	public static void pruneMap(SortedMap<String, Integer> grams){
+		
+		// sort by string length
+		ArrayList<String> bigToSmall = new ArrayList<String>();
+		String biggest = "";
+		for(String str : grams.keySet()){
+			if( str.length() > biggest.length())
+				biggest = str;
+			bigToSmall.add(str);
+		}
+		TreeMapStringLengthIntegerValueComparator  comp = new TreeMapStringLengthIntegerValueComparator(biggest);
+		java.util.Collections.sort(bigToSmall, comp);		
+		for(String str: bigToSmall){
+			if( str.length() > 1)
+			for(int endIndex=1; endIndex<str.length();endIndex++){
+				if( grams.containsKey(str.substring(0, endIndex)) && grams.get(str.substring(0, endIndex)).equals(grams.get(str)) )
+					grams.remove(str.substring(0, endIndex));
+			}
+			//System.out.println(str);
+			 //removeMatchingDecomposistions(returnGrams,m.getKey(),m.getValue()); 							
+		}
+		
+		
+	}	
 	public static  void writeMatrixToFile(double[][] matrixToWrite, String fileName){
 		BufferedWriter out = null;
 		try {

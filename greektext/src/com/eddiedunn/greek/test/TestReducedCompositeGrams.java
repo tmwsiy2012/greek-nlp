@@ -14,7 +14,7 @@ public class TestReducedCompositeGrams {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false,false);
+		Corpus c = new Corpus(false,false,false);
 		
 		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());

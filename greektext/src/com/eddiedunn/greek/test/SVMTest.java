@@ -27,7 +27,7 @@ public class SVMTest {
     	      
     	     
     	      //Corpus c = new Corpus((new DataReader()).getManuScripts());
-    	      Corpus c = new Corpus(false,false);
+    	      Corpus c = new Corpus(false,false,false);
     	      boolean isWord =false; // true for ngrams false for char sequences
     	      int sizeOfFeature=2;
     	      int levelsToMatch=1; // levels deep to match DS numbers

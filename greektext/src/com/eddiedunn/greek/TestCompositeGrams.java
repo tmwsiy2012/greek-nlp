@@ -14,9 +14,10 @@ public class TestCompositeGrams {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false, false);
+		Corpus c = new Corpus(false, true, false);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");		
+		
 		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
 		System.out.println("totalTokens: "+tmpGrandCompositeGrams.size());
 		runCompositeGramTF_IDFFeature(c, tmpGrandCompositeGrams);

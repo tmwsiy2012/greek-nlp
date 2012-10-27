@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.eddiedunn.util.CU;
+import com.eddiedunn.util.TreeMapStringLengthIntegerValueComparator;
 
 
 public class Manuscript {
@@ -22,6 +23,7 @@ public class Manuscript {
 	private SortedMap<String, Double> nGramWeight;
 	private SortedMap<String, Double> nGramUnitWeight;
 	private SortedMap<String, Integer> compositeGrams;
+	
 	private SortedMap<Integer, SortedMap<String, Integer>> compositeGramsChap;
 	private SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> charGramsChap;
 	private SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> nGramsChap;
@@ -34,7 +36,7 @@ public class Manuscript {
 
 
 	
-	public Manuscript(boolean loadChapters,int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){
+	public Manuscript(boolean loadChapters,int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){		
 	    this.chapText=chapText;
 	    this.loadChapters=loadChapters;
 	    this.manuscriptID = manuscriptID;
@@ -49,6 +51,7 @@ public class Manuscript {
 		setCharGrams();
 		//System.out.println(id+" Total ngrams: "+nGrams.size()+" charGrams: "+nGrams.size()+" chap text len:"+chapText.size());
 		setCompositeGrams();
+		System.out.println(id+" Created");
 	}
 
 /*	public void addText(String input){
@@ -119,6 +122,7 @@ public class Manuscript {
 		for (int i = 1; i <=CU.ngramMax; i++) {
 			mergeMapCount(globalGrams, getNGrams(i));
 		}
+		CU.pruneMap(globalGrams);
 		this.compositeGrams = globalGrams;
 		// now populate chapter composite grams
 		if( loadChapters){
@@ -133,7 +137,7 @@ public class Manuscript {
 			if( getNGrams(i, chap).size() > 0)
 			mergeMapCount(globalGrams, getNGrams(i, chap));
 		}		
-		
+		CU.pruneMap(globalGrams);
 		tmpCompositeGramsChap.put(chap, globalGrams);
 		}
 		this.compositeGramsChap = tmpCompositeGramsChap;
@@ -153,6 +157,9 @@ public class Manuscript {
 		else
 			return false;
 	}
+	// prune decompisitions with same count start with biggest ngrams \
+	// and work backwards to word and then largest charSequence and work backward to smallest
+
 	private void setNGrams(){
 	    this.nGrams = new TreeMap<Integer,SortedMap<String, Integer>>();
 		String[] arr = getText().split("\\s+");
@@ -171,9 +178,11 @@ public class Manuscript {
 					currentNGrams.put(currentNGram, new Integer(1));
 				}
 			}
+			CU.pruneMap(currentNGrams);
 		}
 		nGrams.put(new Integer(size), currentNGrams);
 		}
+		
 		if( loadChapters){
 		SortedMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>> tmpNGramsChap = new TreeMap<Integer, SortedMap<Integer,SortedMap<String, Integer>>>();		
 		for( int chap=1; chap<=25; chap++){
@@ -196,12 +205,14 @@ public class Manuscript {
 					}
 				}
 			}
+			CU.pruneMap(currentNGrams);
 			currentNGramsChap.put(new Integer(size), currentNGrams);
 			}	
 		tmpNGramsChap.put(new Integer(chap), currentNGramsChap);
 		}
-	
+		
 		this.nGramsChap = tmpNGramsChap;
+		
 		}
 	}
 	private void setCharGrams(){
@@ -225,6 +236,7 @@ public class Manuscript {
 				}
 			
 		}
+		CU.pruneMap(tmpCharGrams);
 		charGrams.put(new Integer(size), tmpCharGrams);
 		}    
 		
@@ -253,6 +265,7 @@ public class Manuscript {
 				}
 			
 		}
+		CU.pruneMap(tmpCharGrams);
 		currentNGramsChap.put(new Integer(size), tmpCharGrams);
 		}  
 		tmpCharGramsChap.put(new Integer(chap), currentNGramsChap);
