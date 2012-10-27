@@ -51,7 +51,7 @@ public class Manuscript {
 		setCharGrams();
 		//System.out.println(id+" Total ngrams: "+nGrams.size()+" charGrams: "+nGrams.size()+" chap text len:"+chapText.size());
 		setCompositeGrams();
-		System.out.println(id+" Created");
+		//System.out.println(id+" Created");
 	}
 
 /*	public void addText(String input){

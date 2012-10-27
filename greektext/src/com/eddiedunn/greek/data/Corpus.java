@@ -37,13 +37,18 @@ public class Corpus {
     private void loadManuscriptsFromDB(ArrayList<Integer> manuscriptids){
     	manuScripts = new TreeMap<String, Manuscript>();
     	fullDataSet = new ArrayList<String>();
+    	int count =0;
+    	int testMod = manuscriptids.size()/10;
     	for(Integer mid: manuscriptids){
-    		//System.out.println("grabbing manuscript: "+mid);
+    		count++;
     		Manuscript tmp = getManuscript(mid);
     		if(tmp != null ){
     		manuScripts.put(tmp.getID(),tmp);
     		fullDataSet.add(tmp.getID());
     		}
+    		if( count % testMod == 0 ){
+    			System.out.println("loaded "+count+" manuscripts current: "+tmp.getID());    			
+    		}    		
     	}
     }
     private Manuscript getManuscript(Integer manuscriptid){

@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import com.eddiedunn.greek.data.Corpus;
 
 import com.eddiedunn.util.CU;
+import com.eddiedunn.util.StopWatch;
 
 public class RDataGeneratorCompositeGramsOld {
 
@@ -15,10 +16,12 @@ public class RDataGeneratorCompositeGramsOld {
 	 */
 	public static void main(String[] args) {
 
+		StopWatch clock = new StopWatch("started Corpus creation");
 		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
 		Corpus c = new Corpus(true,true,false);
 	
 		System.out.println("created Corpus");
+		clock.printElapsedTime();
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
 		
 		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();

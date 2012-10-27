@@ -64,6 +64,8 @@ public class CU {
 		// sort by string length
 		ArrayList<String> bigToSmall = new ArrayList<String>();
 		String biggest = "";
+		int gramCount=0;
+		int subGramCount=0;		
 		for(String str : grams.keySet()){
 			if( str.length() > biggest.length())
 				biggest = str;
@@ -71,14 +73,20 @@ public class CU {
 		}
 		TreeMapStringLengthIntegerValueComparator  comp = new TreeMapStringLengthIntegerValueComparator(biggest);
 		java.util.Collections.sort(bigToSmall, comp);		
+
 		for(String str: bigToSmall){
 			if( str.length() > 1)
 			for(int endIndex=1; endIndex<str.length();endIndex++){
-				if( grams.containsKey(str.substring(0, endIndex)) && grams.get(str.substring(0, endIndex)).equals(grams.get(str)) )
-					grams.remove(str.substring(0, endIndex));
-			}
-			//System.out.println(str);
-			 //removeMatchingDecomposistions(returnGrams,m.getKey(),m.getValue()); 							
+				if( grams.containsKey(str.substring(0, endIndex)) && grams.containsKey(str) ){
+					gramCount=grams.get(str).intValue();
+					subGramCount=grams.get(str.substring(0, endIndex)).intValue() ;						
+						if(subGramCount >= gramCount) {				
+							grams.remove(str.substring(0, endIndex));		
+							if(subGramCount > gramCount)
+								grams.put(str.substring(0, endIndex), new Integer(subGramCount-gramCount));
+						}
+				}
+			}							
 		}
 		
 		
