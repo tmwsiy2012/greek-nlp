@@ -220,6 +220,9 @@ public class Corpus {
 	return manuScripts;
     }
 
+    public SortedMap<String, Manuscript> getManuScripts(int chapter) {
+	return manuScripts;
+    }
 
     
     public void setManuScripts(SortedMap<String, Manuscript> manuScripts) {
@@ -523,11 +526,19 @@ public class Corpus {
     	}
     	return null;
     }
-    private SortedMap<Integer, String> getChapDocs(int chap){
+    public SortedMap<Integer, String> getChapDocs(int chap){
     	SortedMap<Integer, String> returnValue = new TreeMap<Integer, String>();
     	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
     		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > 10)
     			returnValue.put(m.getValue().getManuscriptID(), m.getValue().getText(chap));
+    	}
+    	return returnValue;
+    }
+    public SortedMap<String, String> getChapDocsName(int chap){
+    	SortedMap<String, String> returnValue = new TreeMap<String, String>();
+    	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
+    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > 10)
+    			returnValue.put(m.getValue().getID(), m.getValue().getText(chap));
     	}
     	return returnValue;
     }
