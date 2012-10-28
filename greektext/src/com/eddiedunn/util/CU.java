@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.SortedMap;
 
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
@@ -440,7 +441,28 @@ public static boolean checkVerseString(String stringToCheck){
 		}		
 		return returnValue;
 	}	
-
+	public static double[] readCountsVectorFromFile(String fileName){
+		BufferedReader in = null;
+		
+		ArrayList<Double> returnValue = new ArrayList<Double>();
+		try {
+	        in = new BufferedReader(new InputStreamReader
+	        		(new FileInputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+			String line=in.readLine();
+			
+			String[] tokens = line.split(",");
+			returnValue.add(Double.parseDouble(tokens[1]));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				in.close();
+			} catch (Exception e2) {}
+		}	
+			
+		return ArrayUtils.toPrimitive(returnValue.toArray(new Double[0]));
+		
+	}
 	public static String[] readStringVectorFromFile(String fileName){
 		BufferedReader in = null;
 		String[] returnValue = new String[0];

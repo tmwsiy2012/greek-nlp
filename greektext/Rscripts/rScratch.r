@@ -44,6 +44,14 @@ compfull.cca <- cca(compfull)
 
 compcosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\CompositeGramCosineMatrixFull.txt", header=FALSE)
 mlabelsCosine <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\compositeGramManuscriptNameVectorFull.txt",what=character(),sep=",",nlines=1)
+rownames(compcosine) <- mlabelsCosine
+colnames(compcosine) <- mlabelsCosine
+
+compcosineold <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\CompositeGramCosineMatrixOld.txt", header=FALSE)
+mlabelsCosineOld <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\compositeGramManuscriptNameVectorOld.txt",what=character(),sep=",",nlines=1)
+rownames(compcosineold) <- mlabelsCosineOld
+colnames(compcosineold) <- mlabelsCosineOld
+compcosineold.matrix <- as.matrix(compcosineold)
 
 compold.mds0 <- monoMDS(compold.dist)
 compfull.mds0 <- monoMDS(compfull.dist)
@@ -60,3 +68,8 @@ save.image(file="c:\\users\\tmwsiy\\workspace\\greektext\\output\\dataBlob.RData
 
 stressplot(data.mds0, data.dis)
 ordiplot(data.mds0, type="t")
+
+    source("http://bioconductor.org/biocLite.R")
+    biocLite("genefilter")
+	
+	corrplot(compcosine.matrix.scaled, order="hclust",tl.cex=.4)
