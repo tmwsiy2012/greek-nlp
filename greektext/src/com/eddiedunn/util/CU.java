@@ -76,22 +76,57 @@ public class CU {
 		java.util.Collections.sort(bigToSmall, comp);		
 
 		for(String str: bigToSmall){
+			if( str.length() > 1){
+				for(int endIndex=1; endIndex<str.length();endIndex++){
+					if( grams.containsKey(str.substring(0, endIndex)) && grams.containsKey(str) ){
+						gramCount=grams.get(str).intValue();
+						subGramCount=grams.get(str.substring(0, endIndex)).intValue() ;						
+							if(gramCount>1 && subGramCount>2 && subGramCount-gramCount > 1 && subGramCount >= gramCount) {				
+								grams.remove(str.substring(0, endIndex));		
+								if(subGramCount > gramCount){
+									System.out.println("re add triggered token: *"+str.substring(0, endIndex)+"* this gram count: "+subGramCount+" supergram count: "+gramCount);
+									grams.put(str.substring(0, endIndex), new Integer(subGramCount-gramCount));
+								}
+							}
+					}
+				}
+			}else { // remove single chars 
+				grams.remove(str);
+			}
+		}
+		
+		
+	}	
+	public static void pruneMapNoReAdd(SortedMap<String, Integer> grams){
+		
+		// sort by string length
+		ArrayList<String> bigToSmall = new ArrayList<String>();
+		String biggest = "";
+		int gramCount=0;
+		int subGramCount=0;		
+		for(String str : grams.keySet()){
+			if( str.length() > biggest.length())
+				biggest = str;
+			bigToSmall.add(str);
+		}
+		TreeMapStringLengthIntegerValueComparator  comp = new TreeMapStringLengthIntegerValueComparator(biggest);
+		java.util.Collections.sort(bigToSmall, comp);		
+
+		for(String str: bigToSmall){
 			if( str.length() > 1)
 			for(int endIndex=1; endIndex<str.length();endIndex++){
 				if( grams.containsKey(str.substring(0, endIndex)) && grams.containsKey(str) ){
 					gramCount=grams.get(str).intValue();
 					subGramCount=grams.get(str.substring(0, endIndex)).intValue() ;						
-						if(subGramCount >= gramCount) {				
+						if(subGramCount == gramCount) {				
 							grams.remove(str.substring(0, endIndex));		
-							if(subGramCount > gramCount)
-								grams.put(str.substring(0, endIndex), new Integer(subGramCount-gramCount));
 						}
 				}
 			}							
 		}
 		
 		
-	}	
+	}		
 	public static  void writeMatrixToFile(double[][] matrixToWrite, String fileName){
 		BufferedWriter out = null;
 		try {
