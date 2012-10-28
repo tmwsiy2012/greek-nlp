@@ -14,7 +14,7 @@ public class TestCompositeGrams {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false, true, false);
+		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,true);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");		
 		

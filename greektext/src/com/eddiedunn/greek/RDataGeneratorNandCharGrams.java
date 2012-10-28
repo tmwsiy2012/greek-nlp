@@ -17,7 +17,7 @@ public class RDataGeneratorNandCharGrams {
 		// TODO Auto-generated method stub
 		//Corpus c = new Corpus((new DataReader()).getManuScripts());
 		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
-		Corpus c = new Corpus(false,true,false);
+		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,true);
 		//Corpus c = new Corpus(false,true,false);
 		System.out.println("created Corpus");
 

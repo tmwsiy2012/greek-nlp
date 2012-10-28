@@ -14,7 +14,7 @@ public class Test2 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false,false,false);
+		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,false);
 		
 		double sum=0;
 		for(Map.Entry<String, Manuscript> m : c.getManuScripts().entrySet() ){

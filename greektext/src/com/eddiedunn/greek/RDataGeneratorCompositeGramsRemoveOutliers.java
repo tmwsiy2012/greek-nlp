@@ -18,7 +18,7 @@ public class RDataGeneratorCompositeGramsRemoveOutliers {
 
 		StopWatch clock = new StopWatch("started Corpus creation");
 		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
-		Corpus c = new Corpus(false,true,true);		
+		Corpus c = new Corpus(CU.selectAllManuscriptsRemoveOutliersSQL,true);		
 		System.out.println("created Corpus");
 		clock.printElapsedTime();
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");

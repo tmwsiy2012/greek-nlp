@@ -24,13 +24,12 @@ public class Corpus {
     private ArrayList<String> testingSet;
     private ArrayList<String> fullDataSet;
     private boolean loadChapters;
-    private boolean removeOutliers;
+
     
 
-    public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
-    this.loadChapters=loadChapters;
-    this.removeOutliers = removeOutliers;
-	loadManuscriptsFromDB(getManuscriptIDs(onlyOld));
+    public Corpus(String initialSQL, boolean loadChapters) {
+    this.loadChapters = loadChapters;
+	loadManuscriptsFromDB(getManuscriptIDs(initialSQL));
 	createTrainTestSets(.5); // percent training
     }
     
@@ -120,7 +119,7 @@ public class Corpus {
         
     	return returnvalue;
     }
-    private ArrayList<Integer> getManuscriptIDs(boolean onlyOld){
+    private ArrayList<Integer> getManuscriptIDs(String initialSQL){
     	ArrayList<Integer> manuscriptids = new ArrayList<Integer>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -137,11 +136,8 @@ public class Corpus {
 	 
 	        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        stmt = con.createStatement();
-	        String sql = CU.selectAllManuscriptsSQL;
-	        if(removeOutliers)
-	        	sql = CU.selectAllManuscriptsRemoveOutliersSQL;
-	        if(onlyOld)
-	            sql = CU.selectOldManuscriptsSQL;	        
+	        String sql = initialSQL;
+        
 	        result = stmt.executeQuery(sql);
 	        int count=0;
 	        while (result.next()){

@@ -14,7 +14,7 @@ public class RunStats {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false,true,false);
+		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,true);
 		
 		double sum=0;
 		for(Map.Entry<String, Manuscript> m : c.getManuScripts().entrySet() ){

@@ -18,7 +18,7 @@ public class RDataGeneratorCompositeGramsOld {
 
 		StopWatch clock = new StopWatch("started Corpus creation");
 		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
-		Corpus c = new Corpus(true,true,false);
+		Corpus c = new Corpus(CU.selectOldManuscriptsSQL,true);
 	
 		System.out.println("created Corpus");
 		clock.printElapsedTime();

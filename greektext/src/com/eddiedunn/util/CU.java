@@ -33,7 +33,7 @@ public class CU {
 
 
 	public static final String newline = System.getProperty("line.separator");
-	public static final String selectAllManuscriptsRemoveOutliersSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('094','620','621','631','704','807') order by name";
+	public static final String selectAllManuscriptsRemoveOutliersSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('041','061','083','091','094','101','104','106','110','205','216','217','301','303','310','315','401','404','405','504','506','610','613','618','620','621','628','631','704','807') order by name";
 	public static final String selectAllManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('807') order by name";
 	public static final String selectOldManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name in ('031','041','061','081','083','091','092','093','094','001','002','003','004','005','006','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118') order by name";
 	

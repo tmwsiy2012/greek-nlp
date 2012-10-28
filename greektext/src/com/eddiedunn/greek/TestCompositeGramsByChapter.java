@@ -14,7 +14,7 @@ public class TestCompositeGramsByChapter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Corpus c = new Corpus(false,true,false);
+		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,true);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");		
 		for(int chap=1; chap<=25; chap++){				
