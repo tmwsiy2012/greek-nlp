@@ -84,7 +84,7 @@ public class CU {
 							if(gramCount>1 && subGramCount>2 && subGramCount-gramCount > 1 && subGramCount >= gramCount) {				
 								grams.remove(str.substring(0, endIndex));		
 								if(subGramCount > gramCount){
-									System.out.println("re add triggered token: *"+str.substring(0, endIndex)+"* this gram count: "+subGramCount+" supergram count: "+gramCount);
+									//System.out.println("re add triggered token: *"+str.substring(0, endIndex)+"* this gram count: "+subGramCount+" supergram count: "+gramCount);
 									grams.put(str.substring(0, endIndex), new Integer(subGramCount-gramCount));
 								}
 							}
