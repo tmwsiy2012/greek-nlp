@@ -1,4 +1,4 @@
-package com.eddiedunn.greek;
+package com.eddiedunn.old;
 
 import com.eddiedunn.greek.data.Corpus;
 import com.eddiedunn.util.CU;

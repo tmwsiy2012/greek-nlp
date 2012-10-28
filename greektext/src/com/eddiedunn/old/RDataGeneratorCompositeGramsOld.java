@@ -1,4 +1,4 @@
-package com.eddiedunn.greek;
+package com.eddiedunn.old;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -9,7 +9,7 @@ import com.eddiedunn.greek.data.Corpus;
 import com.eddiedunn.util.CU;
 import com.eddiedunn.util.StopWatch;
 
-public class RDataGeneratorCompositeGramsRemoveOutliers {
+public class RDataGeneratorCompositeGramsOld {
 
 	/**
 	 * @param args
@@ -18,7 +18,8 @@ public class RDataGeneratorCompositeGramsRemoveOutliers {
 
 		StopWatch clock = new StopWatch("started Corpus creation");
 		//public Corpus(boolean onlyOld, boolean loadChapters, boolean removeOutliers) {
-		Corpus c = new Corpus(CU.selectAllManuscriptsRemoveOutliersSQL,true);		
+		Corpus c = new Corpus(CU.selectOldManuscriptsSQL,true);
+	
 		System.out.println("created Corpus");
 		clock.printElapsedTime();
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
@@ -37,33 +38,33 @@ public class RDataGeneratorCompositeGramsRemoveOutliers {
 	}
 	private static void runCompositeGramTF_IDFFeature(int chap, Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams){
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
-		CU.writeCountMapToFile(tmpGrandCompositeGrams, "compositeGramGlobalCountsRemoveOutliersChap"+String.format("%02d", chap));
-		CU.writeVectorToFile(tmp.toArray(new String[0]), "compositeGramFeatureVectorRemoveOutliersChap"+String.format("%02d", chap));
-		CU.writeVectorToFile(c.getManuscriptLabels(chap), "compositeGramManuscriptNameVectorRemoveOutliersChap"+String.format("%02d", chap));
+		CU.writeCountMapToFile(tmpGrandCompositeGrams, "compositeGramGlobalCountsOldChap"+String.format("%02d", chap));
+		CU.writeVectorToFile(tmp.toArray(new String[0]), "compositeGramFeatureVectorOldChap"+String.format("%02d", chap));
+		CU.writeVectorToFile(c.getManuscriptLabels(chap), "compositeGramManuscriptNameVectorOldChap"+String.format("%02d", chap));
 		
 		c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams, chap);
 		System.out.println("chap "+chap+" finished calculate");
-		c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, "CompositeGramIDFFeatureMatrixRemoveOutliersChap"+String.format("%02d", chap));
+		c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, "CompositeGramIDFFeatureMatrixOldChap"+String.format("%02d", chap));
 		System.out.println("chap "+chap+" finished write feature matrix");
 		c.calculateNormalizedCompositeGramWeights(chap,tmpGrandCompositeGrams);
 		System.out.println("chap "+chap+" finished normalize");	
-		c.writeCurrentCosineMatrix(chap,tmpGrandCompositeGrams, "CompositeGramCosineMatrixRemoveOutliersChap"+String.format("%02d", chap));
+		c.writeCurrentCosineMatrix(chap,tmpGrandCompositeGrams, "CompositeGramCosineMatrixOldChap"+String.format("%02d", chap));
 		System.out.println("chap "+chap+" finished");		
 	}	
 	private static void runCompositeGramTF_IDFFeature(Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams){
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
-		CU.writeCountMapToFile(tmpGrandCompositeGrams, "compositeGramGlobalCountsRemoveOutliers");
-		CU.writeVectorToFile(tmp.toArray(new String[0]), "compositeGramFeatureVectorRemoveOutliers");
-		CU.writeVectorToFile(c.getManuscriptLabels(), "compositeGramManuscriptNameVectorRemoveOutliers");
+		CU.writeCountMapToFile(tmpGrandCompositeGrams, "compositeGramGlobalCountsOld");
+		CU.writeVectorToFile(tmp.toArray(new String[0]), "compositeGramFeatureVectorOld");
+		CU.writeVectorToFile(c.getManuscriptLabels(), "compositeGramManuscriptNameVectorOld");
     	
 		
 		c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams);
 		System.out.println("finished calculate");
-		c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, "CompositeGramIDFFeatureMatrixRemoveOutliers");
+		c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, "CompositeGramIDFFeatureMatrixOld");
 		System.out.println("finished write feature matrix");
 		c.calculateNormalizedCompositeGramWeights(tmpGrandCompositeGrams);
 		System.out.println("finished normalize");
-		c.writeCurrentCosineMatrix(tmpGrandCompositeGrams, "CompositeGramCosineMatrixRemoveOutliers");
+		c.writeCurrentCosineMatrix(tmpGrandCompositeGrams, "CompositeGramCosineMatrixOld");
 		System.out.println("finished");
 		
 	}
