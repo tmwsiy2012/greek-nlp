@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="jars/poi-ooxml-schemas-3.8-20120326.jar"/>
 	<classpathentry kind="lib" path="jars/poi-scratchpad-3.8-20120326.jar"/>
 	<classpathentry kind="lib" path="jars/mysql-connector-java-5.1.22-bin.jar"/>
+	<classpathentry kind="lib" path="jars/charts4j-1.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
