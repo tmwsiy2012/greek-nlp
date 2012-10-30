@@ -15,8 +15,8 @@ public class RImageGenerator {
 	public RImageGenerator(String dataBase) {		
 		this.dataBase = dataBase;
 		this.doChapters=false;
-		this.loadExistingWorkspace=true;
-		this.saveChanges=true;
+		this.loadExistingWorkspace=false;
+		this.saveChanges=false;
 	}
 
 	public void writeImageSet(){

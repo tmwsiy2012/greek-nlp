@@ -27,7 +27,7 @@ public class RDataLoader {
 		this.dataBase = dataBase;
 		this.loadChapters=false;
 		this.loadExistingWorkspace=false;
-		this.saveChanges=true;
+		this.saveChanges=false;
 	}
 
 

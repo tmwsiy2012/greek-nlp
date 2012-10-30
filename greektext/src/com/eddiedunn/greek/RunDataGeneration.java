@@ -16,6 +16,7 @@ public class RunDataGeneration {
 			imageWriter = new RImageGenerator(baseFileNameList[i]);
 			imageWriter.setDoChapters();
 			imageWriter.setLoadExistingWorkspace();
+			imageWriter.setSaveChanges();
 			imageWriter.writeImageSet();
 		}
 			

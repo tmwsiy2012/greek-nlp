@@ -16,6 +16,7 @@ public class LoadDataIntoR {
 			ldr = new RDataLoader(baseFileNameList[i]);
 			ldr.setLoadChapters();
 			ldr.setLoadExistingWorkspace();		
+			ldr.setSaveChanges();
 			ldr.readDataSetIntoR();
 		}
 	}
