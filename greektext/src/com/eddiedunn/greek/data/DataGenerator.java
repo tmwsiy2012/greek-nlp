@@ -55,7 +55,7 @@ public class DataGenerator {
 			RDataLoader ldr = new RDataLoader(fileNameBase);
 			if(loadChapters)
 				ldr.setLoadChapters();			
-			ldr.setLoadExisting();
+			ldr.setLoadExistingWorkspace();
 			ldr.readDataSetIntoR();
 			System.out.println("finished load "+fileNameBase+" data into R");
 			Rclock.printElapsedTime();

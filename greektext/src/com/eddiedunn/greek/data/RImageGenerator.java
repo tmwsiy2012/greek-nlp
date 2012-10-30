@@ -9,13 +9,13 @@ public class RImageGenerator {
 
 	String dataBase;
 	boolean doChapters;
-	boolean loadExisting;
+	boolean loadExistingWorkspace;
 	boolean saveChanges;	
 	
 	public RImageGenerator(String dataBase) {		
 		this.dataBase = dataBase;
 		this.doChapters=false;
-		this.loadExisting=true;
+		this.loadExistingWorkspace=true;
 		this.saveChanges=true;
 	}
 
@@ -30,7 +30,7 @@ public class RImageGenerator {
 
 
   	      code.addRCode("library(vegan)");
-  	      if( loadExisting )
+  	      if( loadExistingWorkspace )
   	    	  code.addRCode("load(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");    	      
    	     
 
@@ -69,14 +69,14 @@ public class RImageGenerator {
 	public void setDoChapters() {
 		this.doChapters = true;
 	}
-	public void setLoadExisting() {
-		this.loadExisting = true;
+	public void setLoadExistingWorkspace() {
+		this.loadExistingWorkspace = true;
 	}	
 	public void UnsetDoChapters() {
 		this.doChapters = false;
 	}
-	public void UnsetLoadExisting() {
-		this.loadExisting = false;
+	public void UnsetLoadExistingWorkspace() {
+		this.loadExistingWorkspace = false;
 	}		
 	public void unSetSaveChanges() {
 		this.saveChanges = false;

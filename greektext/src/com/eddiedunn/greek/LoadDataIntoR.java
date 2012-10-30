@@ -15,7 +15,7 @@ public class LoadDataIntoR {
 		for (int i = 0;  i<initialSQLList.length; i++) {
 			ldr = new RDataLoader(baseFileNameList[i]);
 			ldr.setLoadChapters();
-			ldr.setLoadExisting();		
+			ldr.setLoadExistingWorkspace();		
 			ldr.readDataSetIntoR();
 		}
 	}

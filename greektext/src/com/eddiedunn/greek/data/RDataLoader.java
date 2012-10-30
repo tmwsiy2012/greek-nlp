@@ -19,14 +19,14 @@ public class RDataLoader {
 	 */
 	String dataBase;
 	boolean loadChapters;
-	boolean loadExisting;
+	boolean loadExistingWorkspace;
 	boolean saveChanges;
 	
 	
 	public RDataLoader(String dataBase) {		
 		this.dataBase = dataBase;
 		this.loadChapters=false;
-		this.loadExisting=false;
+		this.loadExistingWorkspace=false;
 		this.saveChanges=true;
 	}
 
@@ -47,7 +47,7 @@ public class RDataLoader {
 
 
     	      code.addRCode("library(vegan)");
-    	      if( loadExisting )
+    	      if( loadExistingWorkspace )
     	    	  code.addRCode("load(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");    	      
     	      code.addDoubleMatrix(dataBase+".cosine", matrix);
     	      code.addDoubleMatrix(dataBase, data);
@@ -97,7 +97,7 @@ public class RDataLoader {
 		      double[][] matrix = CU.readMatrixFromFile(chapDataBase+"CosineMatrix", manuscriptLabelVector.length);
 		      double[][] data = CU.readDataFrameFromFile(chapDataBase+"IDFFeatureMatrix", manuscriptLabelVector.length, featureLabelVector.length);
 		   
-		      if( loadExisting )
+		      if( loadExistingWorkspace )
 		    	  code.addRCode("load.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
 		
 		      code.addRCode("library(vegan)");
@@ -141,8 +141,8 @@ public class RDataLoader {
 	public void setLoadChapters() {
 		this.loadChapters = true;
 	}
-	public void setLoadExisting() {
-		this.loadExisting = true;
+	public void setLoadExistingWorkspace() {
+		this.loadExistingWorkspace = true;
 	}	
 	
 	public void unSetSaveChanges() {
@@ -158,8 +158,8 @@ public class RDataLoader {
 	public void UnsetLoadChapters() {
 		this.loadChapters = false;
 	}
-	public void UnsetLoadExisting() {
-		this.loadExisting = false;
+	public void UnsetLoadExistingWorkspace() {
+		this.loadExistingWorkspace = false;
 	}	
 	
 	

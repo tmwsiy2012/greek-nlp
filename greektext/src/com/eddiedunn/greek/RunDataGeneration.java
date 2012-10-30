@@ -15,7 +15,7 @@ public class RunDataGeneration {
 		for (int i = 0;  i<initialSQLList.length; i++) {
 			imageWriter = new RImageGenerator(baseFileNameList[i]);
 			imageWriter.setDoChapters();
-			imageWriter.setLoadExisting();
+			imageWriter.setLoadExistingWorkspace();
 			imageWriter.writeImageSet();
 		}
 			
