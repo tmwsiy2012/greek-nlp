@@ -1,4 +1,4 @@
-package com.eddiedunn.greek;
+package com.eddiedunn.greek.data;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +14,6 @@ import java.util.TreeMap;
 
 
 
-import com.eddiedunn.greek.data.VerseFile;
 import com.eddiedunn.util.CU;
 
 

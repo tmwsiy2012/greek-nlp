@@ -16,10 +16,10 @@ public class RRawCountDataGenerator {
 	 boolean isWord =true; // true for ngrams false for char sequences
     int sizeOfFeature=1;
     int levelsToMatch=1; // levels deep to match DS numbers
-    double[][] matrix =  c.getDataSetMatrix(isWord, sizeOfFeature);
+/*    double[][] matrix =  c.getDataSetMatrix(isWord, sizeOfFeature);
     String[] features = c.getFullDataSetFeatureLabels(isWord, sizeOfFeature);
     String[] labels = CU.readManuscriptNames(onlyOld);
-    CU.writeMatrixToFileWithHeaders(matrix, features, labels, "1NgramCountMatrix");
+    CU.writeMatrixToFileWithHeaders(matrix, features, labels, "1NgramCountMatrix");*/
     
     }
 

@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.SortedMap;
 
 
@@ -33,7 +34,12 @@ public class CU {
 
 
 	public static final String newline = System.getProperty("line.separator");
-	public static final String selectAllManuscriptsRemoveOutliersSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('041','061','083','091','094','101','104','106','110','205','216','217','301','303','310','315','401','404','405','504','506','610','613','618','620','621','628','631','704','807') order by name";
+	private static final String outliers = "'001','002','041','061','083','091','092','094','101','104','106','107','110','205','216','217','301','303','310','315','401','404','405','504','506','610','611','613','618','620','621','628','631','704','807'";
+	private static final String outlierHalf = "'001','002','003','004','005','006','041','061','081','083','091','092','093','094','101','103','104','105','106','107','108','110','114','202','203','205','207','213','216','217','301','302','303','304','305','309','310','315','401','403','404','405','411','503','505','504','506','507','510','605','607','610','611','613','614','618','620','621','625','626','628','631','704','802','807'";
+	public static final String selectAllManuscriptsRemoveOutliersSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ("+outliers+") order by name";
+	public static final String selectAllManuscriptsMostCorrolatedHalfSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ("+outlierHalf+") order by name";
+	public static final String selectAllManuscriptsONLYOutliersSQL = "SELECT manuscriptid,name FROM manuscript where  name IN ("+outliers+",'031') AND name NOT IN ('807') order by name";
+	public static final String selectAllManuscriptsLeastCorrolatedHalfSQL = "SELECT manuscriptid,name FROM manuscript where  name IN ("+outlierHalf+",'031') AND name NOT IN ('807') order by name";
 	public static final String selectAllManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('807') order by name";
 	public static final String selectOldManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name in ('031','041','061','081','083','091','092','093','094','001','002','003','004','005','006','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118') order by name";
 	
@@ -53,14 +59,14 @@ public class CU {
 	public static final int minVerseLength=3;
 	public static final int minDocumentLength=75;
 
-	public static final   int ngramMax=5; // 1 inherent min
+	public static final   int ngramMax=2; // 1 inherent min
 	public static final  int chargramMin=2;
-	public static final  int chargramMax=8;
-	public static final int grandCompositeMinCount=1;
-	public static final int grandCompositeMaxOffset=0;
+	public static final  int chargramMax=5;
+	//public static final int grandCompositeMinCount=1;
+	//public static final int grandCompositeMaxOffset=0;
 	public static String Rexecutable= "C:\\Program Files\\R\\R-2.13.1\\bin\\x64\\Rscript.exe";
 
-	public static void pruneMap(SortedMap<String, Integer> grams){
+/*	public static void pruneMap(SortedMap<String, Integer> grams){
 		
 		// sort by string length
 		ArrayList<String> bigToSmall = new ArrayList<String>();
@@ -77,11 +83,11 @@ public class CU {
 
 		for(String str: bigToSmall){
 			if( str.length() > 1){
-				for(int endIndex=1; endIndex<str.length();endIndex++){
+				for(int endIndex=str.length()-1; endIndex>=2;endIndex--){
 					if( grams.containsKey(str.substring(0, endIndex)) && grams.containsKey(str) ){
 						gramCount=grams.get(str).intValue();
 						subGramCount=grams.get(str.substring(0, endIndex)).intValue() ;						
-							if(gramCount>1 && subGramCount>2 && subGramCount-gramCount > 1 && subGramCount >= gramCount) {				
+							if( subGramCount >= gramCount) {				
 								grams.remove(str.substring(0, endIndex));		
 								if(subGramCount > gramCount){
 									//System.out.println("re add triggered token: *"+str.substring(0, endIndex)+"* this gram count: "+subGramCount+" supergram count: "+gramCount);
@@ -97,7 +103,9 @@ public class CU {
 		
 		
 	}	
-	public static void pruneMapNoReAdd(SortedMap<String, Integer> grams){
+	
+	// maybe one day add ngram version of this
+	public static void pruneMapWithoutReAdd(SortedMap<String, Integer> grams){
 		
 		// sort by string length
 		ArrayList<String> bigToSmall = new ArrayList<String>();
@@ -113,8 +121,8 @@ public class CU {
 		java.util.Collections.sort(bigToSmall, comp);		
 
 		for(String str: bigToSmall){
-			if( str.length() > 1)
-			for(int endIndex=1; endIndex<str.length();endIndex++){
+			if( str.length() > 1){
+			for(int endIndex=str.length()-1; endIndex>=2;endIndex--){
 				if( grams.containsKey(str.substring(0, endIndex)) && grams.containsKey(str) ){
 					gramCount=grams.get(str).intValue();
 					subGramCount=grams.get(str.substring(0, endIndex)).intValue() ;						
@@ -122,11 +130,38 @@ public class CU {
 							grams.remove(str.substring(0, endIndex));		
 						}
 				}
-			}							
+			}						
+			}else { // remove single chars 
+				grams.remove(str);
+			}
 		}
 		
 		
-	}		
+	}*/	
+    public static void mergeMapCount(SortedMap<String, Integer> original,
+    	    SortedMap<String, Integer> oneToAdd) {
+    	for (Map.Entry<String, Integer> o : oneToAdd.entrySet()) {
+    	    if (original.containsKey(o.getKey())) {
+    		int tmp = original.get(o.getKey()).intValue()
+    			+ 1;
+    		original.put(o.getKey(), new Integer(tmp));
+    	    } else {
+    		original.put(o.getKey(), new Integer(1));
+    	    }
+    	}
+        }
+    public static void mergeMapSum(SortedMap<String, Integer> original,
+    	    SortedMap<String, Integer> oneToAdd) {
+    	for (Map.Entry<String, Integer> o : oneToAdd.entrySet()) {
+    	    if (original.containsKey(o.getKey())) {
+    		int tmp = original.get(o.getKey()).intValue()
+    			+ oneToAdd.get(o.getKey()).intValue();
+    		original.put(o.getKey(), new Integer(tmp));
+    	    } else {
+    		original.put(o.getKey(), oneToAdd.get(o.getKey()));
+    	    }
+    	}
+        }     
 	public static  void writeMatrixToFile(double[][] matrixToWrite, String fileName){
 		BufferedWriter out = null;
 		try {
@@ -369,7 +404,7 @@ public static boolean checkVerseString(String stringToCheck){
 		}		
 		return matrix;
 	}
-	public static  String[] readManuscriptNames(boolean onlyOld){
+	public static  String[] readManuscriptNames(String sql){
 		ArrayList<String> tmp = new ArrayList<String>();
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -385,9 +420,6 @@ public static boolean checkVerseString(String stringToCheck){
 	 
 	        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        stmt = con.createStatement();
-	        String sql = selectAllManuscriptsSQL;
-	        if( onlyOld )
-	            sql = selectOldManuscriptsSQL;
 	        result = stmt.executeQuery(sql);
 	        
 	        while (result.next()){
@@ -476,6 +508,34 @@ public static boolean checkVerseString(String stringToCheck){
 		}		
 		return returnValue;
 	}	
+	public static  double[][] readDataFrameFromFile(String fileName, int numRows, int numCols){
+		double[][] returnValue = new double[numRows][numCols];
+		BufferedReader in = null;
+		try {
+	        in = new BufferedReader(new InputStreamReader
+	        		(new FileInputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+                    //(new FileOutputStream(System.getenv("USERPROFILE")+"\\Documents\\wordCount.csv"),"UTF8"));
+	        
+			for (int k = 0; k < numRows; k++) {				
+				String line=in.readLine();
+				
+				String[] tokens = line.split(",");
+				for (int i = 0; i < tokens.length; i++) {
+					//System.out.println(k+": "+i+" tokens.length: "+tokens.length);
+					returnValue[k][i] = (new Double(tokens[i])).doubleValue();
+				}
+				
+			}
+	        
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				in.close();
+			} catch (Exception e2) {}
+		}		
+		return returnValue;
+	}		
 	public static double[] readCountsVectorFromFile(String fileName){
 		BufferedReader in = null;
 		

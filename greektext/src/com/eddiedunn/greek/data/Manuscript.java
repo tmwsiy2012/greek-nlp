@@ -3,6 +3,9 @@ package com.eddiedunn.greek.data;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.SortedMap;
@@ -30,14 +33,18 @@ public class Manuscript {
 	private SortedMap<Integer,SortedMap<String, Integer>> nGrams;
 	private SortedMap<Integer,SortedMap<String, Integer>> charGrams;
 	private boolean loadChapters;
+	private boolean writeDB;
+	private int maxGramSize;
 	
 
 	
 
 
 	
-	public Manuscript(boolean loadChapters,int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){		
+	public Manuscript(boolean writeDB,boolean loadChapters,int manuscriptID,String id, String text, String family, SortedMap<Integer, String> chapText){		
 	    this.chapText=chapText;
+	    this.writeDB=writeDB;
+	    this.maxGramSize=0;
 	    this.loadChapters=loadChapters;
 	    this.manuscriptID = manuscriptID;
 		this.id = id;
@@ -46,14 +53,17 @@ public class Manuscript {
 		this.nGramWeight = new TreeMap<String, Double>();
 		this.nGramUnitWeight = new TreeMap<String, Double>();
 		this.family = family;
-		
+		if( writeDB )
+			resetValuesforThisManuscriptInDB();
 		setNGrams();
 		setCharGrams();
 		//System.out.println(id+" Total ngrams: "+nGrams.size()+" charGrams: "+nGrams.size()+" chap text len:"+chapText.size());
 		setCompositeGrams();
 		//System.out.println(id+" Created");
 	}
-
+	public int getMaxGramSize(){
+		return this.maxGramSize;
+	}
 /*	public void addText(String input){
 		text.append(input);
 	}
@@ -114,35 +124,139 @@ public class Manuscript {
 	}
 	private void setCompositeGrams(){
 		SortedMap<String, Integer> globalGrams = new TreeMap<String, Integer>();
+		
 		SortedMap<Integer, SortedMap<String, Integer>> tmpCompositeGramsChap = new TreeMap<Integer, SortedMap<String, Integer>>();
 		for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
-			mergeMapCount(globalGrams, getNCharGrams(i));
+			CU.mergeMapSum(globalGrams, getNCharGrams(i));
 		}
 		
 		for (int i = 1; i <=CU.ngramMax; i++) {
-			mergeMapCount(globalGrams, getNGrams(i));
+			CU.mergeMapSum(globalGrams, getNGrams(i));
 		}
-		CU.pruneMap(globalGrams);
+		//CU.pruneMap(globalGrams);
+		if( writeDB )
+			writeGlobalGramsToDB(globalGrams);
 		this.compositeGrams = globalGrams;
 		// now populate chapter composite grams
 		if( loadChapters){
 		for( int chap=1; chap<=25;chap++){
 			globalGrams = new TreeMap<String, Integer>();
-		for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
-			if( getNCharGrams(i, chap).size() > 0)
-				mergeMapCount(globalGrams, getNCharGrams(i, chap));
-		}
-		
-		for (int i = 1; i <=CU.ngramMax; i++) {
-			if( getNGrams(i, chap).size() > 0)
-			mergeMapCount(globalGrams, getNGrams(i, chap));
-		}		
-		CU.pruneMap(globalGrams);
-		tmpCompositeGramsChap.put(chap, globalGrams);
+			for (int i =CU.chargramMin; i <=CU.chargramMax; i++) {
+				if( getNCharGrams(i, chap).size() > 0)
+					CU.mergeMapSum(globalGrams, getNCharGrams(i, chap));
+			}
+			
+			for (int i = 1; i <=CU.ngramMax; i++) {
+				if( getNGrams(i, chap).size() > 0)
+				CU.mergeMapSum(globalGrams, getNGrams(i, chap));
+			}		
+			//CU.pruneMap(globalGrams);
+			if( writeDB )
+				writeChapterGlobalGramsToDB(chap,globalGrams);		
+			tmpCompositeGramsChap.put(chap, globalGrams);
 		}
 		this.compositeGramsChap = tmpCompositeGramsChap;
 		}
 	}
+	private void resetValuesforThisManuscriptInDB(){
+
+		    try {
+		        Class.forName("com.mysql.jdbc.Driver");
+		    } catch (ClassNotFoundException ex) {
+		        ex.printStackTrace();
+		    }
+		    Connection con = null;
+		    Statement stmt = null;
+		
+		    try {
+		
+		 
+		        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
+		        stmt = con.createStatement();
+		        
+		        
+		        stmt.executeUpdate("delete from grams_by_manuscript where manuscriptid="+this.manuscriptID+";");
+		        stmt.executeUpdate("delete from grams_by_chap where manuscriptid="+this.manuscriptID+";");
+		
+		    
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}finally{
+		    try {
+		        con.close();	
+		    } catch (Exception e2) {
+			e2.printStackTrace();
+		    }
+		    
+		}	
+	}
+	private void writeGlobalGramsToDB(SortedMap<String, Integer> globalGrams){
+		
+		    try {
+		        Class.forName("com.mysql.jdbc.Driver");
+		    } catch (ClassNotFoundException ex) {
+		        ex.printStackTrace();
+		    }
+		    Connection con = null;
+		    Statement stmt = null;
+		
+		    try {
+		
+		 
+		        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
+		        stmt = con.createStatement();
+		        
+		        for(Map.Entry<String, Integer> g : globalGrams.entrySet() ){
+		        	stmt.executeUpdate("insert into grams_by_manuscript(manuscriptid,gram,count) values("+this.manuscriptID+",'"+g.getKey()+"',"+g.getValue().intValue()+");");
+		        	if( g.getValue().intValue() > this.maxGramSize )
+		        		this.maxGramSize = g.getValue().intValue();
+		        }
+		
+		    
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}finally{
+		    try {
+		        con.close();	
+		    } catch (Exception e2) {
+			e2.printStackTrace();
+		    }
+		    
+		}	
+	  
+	}
+	private void writeChapterGlobalGramsToDB(int chapter, SortedMap<String, Integer> globalGrams){
+		
+		    try {
+		        Class.forName("com.mysql.jdbc.Driver");
+		    } catch (ClassNotFoundException ex) {
+		        ex.printStackTrace();
+		    }
+		    Connection con = null;
+		    Statement stmt = null;
+		
+		    try {
+		
+		 
+		        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
+		        stmt = con.createStatement();
+		        
+		        for(Map.Entry<String, Integer> g : globalGrams.entrySet() )
+		        	stmt.executeUpdate("insert into grams_by_chap(manuscriptid,chapternumber,gram,count) values("+this.manuscriptID+","+chapter+",'"+g.getKey()+"',"+g.getValue().intValue()+");");
+		
+		    
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}finally{
+		    try {
+		        con.close();	
+		    } catch (Exception e2) {
+			e2.printStackTrace();
+		    }
+		    
+		}	
+	  	
+	}	
 	public SortedMap<String, Integer> getCompositeGrams(){
 		return this.compositeGrams;		
 
@@ -171,15 +285,17 @@ public class Manuscript {
 		for (int i = 0; i < arr.length; i++) {			
 			if( i+(size-1) < arr.length ){		
 				String currentNGram = getNGram(arr,i,size);
+				if( currentNGram.length() > maxGramSize )
+					maxGramSize = currentNGram.length();
 				if( currentNGrams.containsKey(currentNGram)){
 					int tmp = currentNGrams.get(currentNGram).intValue() + 1;
 					currentNGrams.put(currentNGram, new Integer(tmp));					
 				}else{
 					currentNGrams.put(currentNGram, new Integer(1));
 				}
-			}
-			CU.pruneMap(currentNGrams);
+			}			
 		}
+		//CU.pruneMap(currentNGrams);
 		nGrams.put(new Integer(size), currentNGrams);
 		}
 		
@@ -205,7 +321,7 @@ public class Manuscript {
 					}
 				}
 			}
-			CU.pruneMap(currentNGrams);
+			//CU.pruneMap(currentNGrams);
 			currentNGramsChap.put(new Integer(size), currentNGrams);
 			}	
 		tmpNGramsChap.put(new Integer(chap), currentNGramsChap);
@@ -236,7 +352,7 @@ public class Manuscript {
 				}
 			
 		}
-		CU.pruneMap(tmpCharGrams);
+		//CU.pruneMap(tmpCharGrams);
 		charGrams.put(new Integer(size), tmpCharGrams);
 		}    
 		
@@ -265,7 +381,7 @@ public class Manuscript {
 				}
 			
 		}
-		CU.pruneMap(tmpCharGrams);
+		//CU.pruneMap(tmpCharGrams);
 		currentNGramsChap.put(new Integer(size), tmpCharGrams);
 		}  
 		tmpCharGramsChap.put(new Integer(chap), currentNGramsChap);
@@ -306,19 +422,6 @@ public class Manuscript {
 		return retVal.toString().trim();		
 	}
 
-    private void mergeMapCount(SortedMap<String, Integer> original,
-    	    SortedMap<String, Integer> oneToAdd) {
-    	for (Map.Entry<String, Integer> o : oneToAdd.entrySet()) {
-    	    if (original.containsKey(o.getKey())) {
-    		int tmp = original.get(o.getKey()).intValue()
-    			+ 1;
-    		original.put(o.getKey(), new Integer(tmp));
-    	    } else {
-    		original.put(o.getKey(), new Integer(1));
-    	    }
-    	}
-        }    
-    
 	public boolean isCorrectFamily(String familyStringToTest, int levelsToMatch){
 	    boolean returnValue = false;
 	    String[] arrayToTest = familyStringToTest.split("\\.");

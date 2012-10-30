@@ -21,9 +21,7 @@ public class Kmeans {
 	private int maxClusterSize;
     
     public static void main(String[] args){
-    	int numClusters=15;
-    	String[] labels = CU.readManuscriptNames(false);    	
-        new Kmeans(CU.readMatrixFromFile("4charGramCosineMatrix", labels.length),labels,numClusters );
+
     }
     
     public Kmeans(double[][] data, String[] labels, int numClusters){

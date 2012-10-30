@@ -28,14 +28,10 @@ public class SVMTest {
     	     
     	      //Corpus c = new Corpus((new DataReader()).getManuScripts());
     	      Corpus c = new Corpus(CU.selectAllManuscriptsSQL,false);
-    	      boolean isWord =false; // true for ngrams false for char sequences
+/*    	      boolean isWord =false; // true for ngrams false for char sequences
     	      int sizeOfFeature=2;
     	      int levelsToMatch=1; // levels deep to match DS numbers
-    	      double[][] train =  c.getTrainingSetMatrix(isWord, sizeOfFeature, levelsToMatch);
-    	      double[][] test =  c.getTestingSetMatrix(isWord, sizeOfFeature, levelsToMatch);
-    	      String[] features = c.getTrainingFeatureLabels(isWord, sizeOfFeature);
-    	      String[] scriptsTrain = c.getTrainingManuscriptLabels();
-    	      String[] scriptsTest = c.getTestingManuscriptLabels();
+
     	      if( train[0].length != test[0].length){
     	    	  System.out.println("feature space not the same, exiting...");
     	    	  System.exit(0);
@@ -44,10 +40,10 @@ public class SVMTest {
     	      
     	      //CU.printMatrix(train);
     	      CU.writeMatrixToFileWithHeaders(train, features, scriptsTrain, "trainingTest");
-    	      CU.writeMatrixToFileWithHeaders(test, features, scriptsTest, "testingTest");
+    	      CU.writeMatrixToFileWithHeaders(test, features, scriptsTest, "testingTest");*/
     	      //CU.writeMatrixToFile(train, "trainingTest");
     	      //CU.writeMatrixToFile(test, "testingTest");
-    	      c.printFamilies(1);
+    	      //c.printFamilies(1);
     	      
 /*    	      int classColumn = train[0].length;
     	      code.addDoubleMatrix("train", train);

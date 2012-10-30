@@ -21,9 +21,7 @@ public class PAMKmeans {
 	private int maxClusterSize;
     
     public static void main(String[] args){
-    	int numClusters=15;
-    	String[] labels = CU.readManuscriptNames(false);    	
-        new PAMKmeans(CU.readMatrixFromFile("4charGramCosineMatrix", labels.length),labels,numClusters );
+
     }
     
     public PAMKmeans(double[][] data, String[] labels, int numClusters){
