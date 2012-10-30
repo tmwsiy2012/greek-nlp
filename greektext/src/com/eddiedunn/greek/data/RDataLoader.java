@@ -20,12 +20,14 @@ public class RDataLoader {
 	String dataBase;
 	boolean loadChapters;
 	boolean loadExisting;
+	boolean saveChanges;
 	
 	
 	public RDataLoader(String dataBase) {		
 		this.dataBase = dataBase;
 		this.loadChapters=false;
 		this.loadExisting=false;
+		this.saveChanges=true;
 	}
 
 
@@ -60,7 +62,8 @@ public class RDataLoader {
     	      
     	      code.addRCode(dataBase+".dist <- vegdist("+dataBase+")");
     	      code.addRCode(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");
-    	      code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
+    	      if(saveChanges)
+    	    	  code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
     	      
     	     
 
@@ -112,7 +115,10 @@ public class RDataLoader {
 		      code.addRCode(chapDataBase+".dist <- vegdist("+chapDataBase+")");
 		      code.addRCode(chapDataBase+".mds0 <- monoMDS("+chapDataBase+".dist)");
 		      code.addRCode(chapDataBase+".mds <- metaMDS("+chapDataBase+".dist)");
-		      code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
+		      
+		      
+    	      if(saveChanges)
+     	    	 code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
 		      
 		     
 		
@@ -138,6 +144,17 @@ public class RDataLoader {
 	public void setLoadExisting() {
 		this.loadExisting = true;
 	}	
+	
+	public void unSetSaveChanges() {
+		this.saveChanges = false;
+	}
+
+
+	public void setSaveChanges() {
+		this.saveChanges = true;
+	}
+
+
 	public void UnsetLoadChapters() {
 		this.loadChapters = false;
 	}

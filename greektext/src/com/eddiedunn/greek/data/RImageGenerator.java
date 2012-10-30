@@ -10,12 +10,13 @@ public class RImageGenerator {
 	String dataBase;
 	boolean doChapters;
 	boolean loadExisting;
-	
+	boolean saveChanges;	
 	
 	public RImageGenerator(String dataBase) {		
 		this.dataBase = dataBase;
 		this.doChapters=false;
 		this.loadExisting=true;
+		this.saveChanges=true;
 	}
 
 	public void writeImageSet(){
@@ -32,8 +33,7 @@ public class RImageGenerator {
   	      if( loadExisting )
   	    	  code.addRCode("load(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");    	      
    	     
-  	      code.addRCode("clabels <- scan(\"c:/users/tmwsiy/workspace/greektext/output/"+dataBase+"FeatureVector.txt\",what=character(),sep=\",\",nlines=1,encoding=\"UTF-8\")");
-  	      
+
   	      code.addRCode("rownames("+dataBase+") <- rlabels");
   	      code.addRCode("colnames("+dataBase+") <- clabels");
   	      code.addRCode("rownames("+dataBase+".cosine) <- rlabels");
@@ -41,7 +41,10 @@ public class RImageGenerator {
   	      
   	      code.addRCode(dataBase+".dist <- vegdist("+dataBase+")");
   	      code.addRCode(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");
-  	      code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
+  	      
+  	      
+  	      if( saveChanges )
+  	    	  code.addRCode("save.image(\"C:/Users/tmwsiy/workspace/greektext/output/AllData.RData\")");
   	      
   	     
 
@@ -75,4 +78,12 @@ public class RImageGenerator {
 	public void UnsetLoadExisting() {
 		this.loadExisting = false;
 	}		
+	public void unSetSaveChanges() {
+		this.saveChanges = false;
+	}
+
+
+	public void setSaveChanges() {
+		this.saveChanges = true;
+	}	
 }
