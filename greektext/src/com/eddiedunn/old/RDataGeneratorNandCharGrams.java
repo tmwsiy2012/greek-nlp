@@ -41,7 +41,7 @@ public class RDataGeneratorNandCharGrams {
 		
 	}	
 	public static void runNGramTF_IDFFeature(Corpus c, int size){
-		SortedMap<String, Integer> tmpGrandNGrams = c.getGrandNGrams(size);
+		SortedMap<String, Integer> tmpGrandNGrams = c.getGrandNGramsSum(size);
 		c.calculateTF_IDF_NGramWeights(size, tmpGrandNGrams);
 		System.out.println("finished TFIDF calculate");
 		c.writeCurrentTFIDFFeatureMatrix(tmpGrandNGrams, size+"NGramIDFFeatureMatrix");
@@ -49,7 +49,7 @@ public class RDataGeneratorNandCharGrams {
 		CU.writeVectorToFile(tmp.toArray(new String[0]),size+"NGramIDFFeatureVector");
 	}
 	public static void runNCharGramTF_IDFFeature(Corpus c, int size){
-		SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNCharGrams(size);
+		SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNCharGramsSum(size);
 		c.calculateTF_IDF_CharNGramWeights(size, tmpGrandNCharGrams);
 		System.out.println("finished TFIDF calculate");
 		c.writeCurrentTFIDFFeatureMatrix(tmpGrandNCharGrams, size+"charGramIDFFeatureMatrix");
@@ -59,9 +59,9 @@ public class RDataGeneratorNandCharGrams {
 
 	
 	public static void runNCharGramTF_IDFCosine(Corpus c, int size){
-		SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNCharGrams(size);
+		SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNCharGramsSum(size);
 	    // write basic stats about features for corpus to a file
-	    	CU.writeCountMapToFile(c.getGrandNCharGrams(size), size+"charGramGlobalCounts");
+	    	CU.writeCountMapToFile(c.getGrandNCharGramsSum(size), size+"charGramGlobalCounts");
 		c.calculateTF_IDF_CharNGramWeights(size,tmpGrandNCharGrams);
 		System.out.println("finished calculate");
 		c.calculateNormalizedCharNGramWeights(size,tmpGrandNCharGrams);
@@ -70,8 +70,8 @@ public class RDataGeneratorNandCharGrams {
 		System.out.println("finished");	    
 	}
 	public static void runNGramTF_IDFCosine(Corpus c, int size){
-	    SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNGrams(size);
-	    	CU.writeCountMapToFile(c.getGrandNGrams(size), size+"NgramGlobalCounts");
+	    SortedMap<String, Integer> tmpGrandNCharGrams = c.getGrandNGramsSum(size);
+	    	CU.writeCountMapToFile(c.getGrandNGramsSum(size), size+"NgramGlobalCounts");
 		c.calculateTF_IDF_NGramWeights(size,tmpGrandNCharGrams);
 		System.out.println("finished calculate");
 		c.calculateNormalizednGramWeights(size,tmpGrandNCharGrams);

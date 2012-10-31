@@ -23,12 +23,12 @@ public class RDataGeneratorCompositeGramsRemoveOutliers {
 		clock.printElapsedTime();
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
 		
-		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
+		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum();
 		System.out.println("totalTokens: "+tmpGrandCompositeGrams.size());
 		
 		runCompositeGramTF_IDFFeature(c, tmpGrandCompositeGrams);		
 		for(int chap=1; chap<=25; chap++){				
-			tmpGrandCompositeGrams = c.getGrandCompositeGrams(chap);
+			tmpGrandCompositeGrams = c.getGrandCompositeGramsSum(chap);
 		
 			System.out.println("chap "+chap+" totalTokens: "+tmpGrandCompositeGrams.size());
 			runCompositeGramTF_IDFFeature(chap, c, tmpGrandCompositeGrams);

@@ -36,13 +36,13 @@ public class DataGenerator {
 		clock.printElapsedTime();
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
 		
-		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
+		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum();
 		System.out.println("totalTokens: "+tmpGrandCompositeGrams.size());
 		
 		runCompositeGramTF_IDFFeature(c, tmpGrandCompositeGrams, fileNameBase);		
 		if(loadChapters){
 			for(int chap=1; chap<=25; chap++){				
-				tmpGrandCompositeGrams = c.getGrandCompositeGrams(chap);
+				tmpGrandCompositeGrams = c.getGrandCompositeGramsSum(chap);
 			
 				System.out.println("chap "+chap+" totalTokens: "+tmpGrandCompositeGrams.size());
 				runCompositeGramTF_IDFFeature(chap, c, tmpGrandCompositeGrams, fileNameBase);
@@ -65,6 +65,7 @@ public class DataGenerator {
 	private static void runCompositeGramTF_IDFFeature(int chap, Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams,String fileNameBase){
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
 		CU.writeCountMapToFile(tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"GlobalCounts");
+		CU.writeCountMapToFile(c.getGrandCompositeGramsCount(chap), fileNameBase+"Chap"+String.format("%02d", chap)+"GlobalIDFCounts");
 		CU.writeVectorToFile(tmp.toArray(new String[0]), fileNameBase+"Chap"+String.format("%02d", chap)+"FeatureVector");
 		CU.writeVectorToFile(c.getManuscriptLabels(chap), fileNameBase+"Chap"+String.format("%02d", chap)+"ManuscriptNameVector");
 		
@@ -80,6 +81,7 @@ public class DataGenerator {
 	private static void runCompositeGramTF_IDFFeature(Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams,String fileNameBase){
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
 		CU.writeCountMapToFile(tmpGrandCompositeGrams, fileNameBase+"GlobalCounts");
+		CU.writeCountMapToFile(c.getGrandCompositeGramsCount(), fileNameBase+"GlobalIDFCounts");
 		CU.writeVectorToFile(tmp.toArray(new String[0]),fileNameBase+"FeatureVector");
 		CU.writeVectorToFile(c.getManuscriptLabels(), fileNameBase+"ManuscriptNameVector");
     	

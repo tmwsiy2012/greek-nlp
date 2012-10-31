@@ -16,7 +16,7 @@ public class TestReducedCompositeGrams {
 	public static void main(String[] args) {
 		Corpus c = new Corpus(CU.selectAllManuscriptsSQL,false);
 		
-		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
+		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum();
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
 		CU.writeCountMapToFile(tmpGrandCompositeGrams, "compositeGramGlobalCountsFullReduced");
 		CU.writeVectorToFile(tmp.toArray(new String[0]), "compositeGramFeatureVectorFullReduced");

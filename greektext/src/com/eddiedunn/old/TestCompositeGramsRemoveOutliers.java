@@ -17,7 +17,7 @@ public class TestCompositeGramsRemoveOutliers {
 		Corpus c = new Corpus(CU.selectAllManuscriptsRemoveOutliersSQL,false);
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");		
-		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams();
+		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum();
 		System.out.println("totalTokens: "+tmpGrandCompositeGrams.size());
 		runCompositeGramTF_IDFFeature(c, tmpGrandCompositeGrams);
 

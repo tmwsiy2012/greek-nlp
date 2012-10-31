@@ -18,7 +18,7 @@ public class TestCompositeGramsByChapterRemoveOutliers {
 		System.out.println("created Corpus");
 		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");		
 		for(int chap=1; chap<=25; chap++){				
-			SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGrams(chap);
+			SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum(chap);
 		
 			System.out.println("chap "+chap+" totalTokens: "+tmpGrandCompositeGrams.size());
 			runCompositeGramTF_IDFFeature(chap, c, tmpGrandCompositeGrams);

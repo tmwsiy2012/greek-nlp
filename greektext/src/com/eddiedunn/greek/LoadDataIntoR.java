@@ -12,11 +12,11 @@ public class LoadDataIntoR {
 		RDataLoader ldr = null;
 		String[] baseFileNameList = {"fullSet","onlyOld","removeOutliers","onlyOutliers","mostCorrolatedHalf","leastCorrolatedHalf"};
 		String[] initialSQLList = {CU.selectAllManuscriptsSQL,CU.selectOldManuscriptsSQL,CU.selectAllManuscriptsRemoveOutliersSQL,CU.selectAllManuscriptsONLYOutliersSQL,CU.selectAllManuscriptsMostCorrolatedHalfSQL,CU.selectAllManuscriptsLeastCorrolatedHalfSQL};
-		for (int i = 0;  i<initialSQLList.length; i++) {
+		for (int i = 1; i<2 /*i<initialSQLList.length*/; i++) {
 			ldr = new RDataLoader(baseFileNameList[i]);
 			ldr.setLoadChapters();
-			ldr.setLoadExistingWorkspace();		
-			ldr.setSaveChanges();
+			//ldr.setLoadExistingWorkspace();		
+			//ldr.setSaveChanges();
 			ldr.readDataSetIntoR();
 		}
 	}
