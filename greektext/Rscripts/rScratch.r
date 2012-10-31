@@ -14,7 +14,7 @@ plot(hresult,labels=mlabels)
 compositedata <- as.matrix(read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\CompositeGramIDFFeatureMatrixFull.txt"))
 
 library(vegan)
-CompositeGramIDFFeatureMatrixFullOld.txt
+
 
 library(vegan)
 mlabelsnoout <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\removeOutliersManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
@@ -25,7 +25,7 @@ colnames(no_out) <- clabelsnoout
 no_out.dist <- vegdist(no_out)
 no_out.mds0 <- monoMDS(no_out.dist)
 
-no_out.mds <- metaMDS(no_out, trace=FALSE)
+
 
 library(vegan)
 mlabelsonlyout <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\onlyOutliersManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
@@ -36,7 +36,6 @@ colnames(only_out) <- clabelsonlyout
 only_out.dist <- vegdist(only_out)
 only_out.mds0 <- monoMDS(only_out.dist)
 
-only_out.mds <- metaMDS(only_out, trace=FALSE)
 
 
 library(vegan)
@@ -51,26 +50,30 @@ old.mds0 <- monoMDS(old.dist)
 
 ordiplot(data.mds0, type="t")
 
-old.mds <- metaMDS(old, trace=FALSE)
+
 
 mlabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
 clabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetFeatureVector.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
 full <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetIDFFeatureMatrix.txt", header=FALSE)
+full.cosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetCosineMatrix.txt", header=FALSE)
+full.cosine.matrix <-
+rownames(full) <- mlabelsFull
+colnames(full) <- clabelsFull
+row
 full.dist <- vegdist(full)
 full.mds0 <- monoMDS(full)
 
-fullcosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetCosineMatrix.txt", header=FALSE)
-rownames(full) <- mlabelsFull
-colnames(full) <- clabelsFull
 
-full.mds <- metaMDS(full, trace=FALSE)
+
+
+
 
 mlabelsAlike <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\mostCorrolatedHalfManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
 clabelsAlike <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\mostCorrolatedHalfFeatureVector.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
 alike_half <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\mostCorrolatedHalfIDFFeatureMatrix.txt", header=FALSE)
 alike_half.cosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\mostCorrolatedHalfCosineMatrix.txt", header=FALSE)
 mlabelsCosineAlike <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\mostCorrolatedHalfManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
-alike_half.cosine.matrix <- cor(as.matrix(alike_half.cosine))
+alike_half.cosine.matrix <- as.matrix(alike_half.cosine)
 rownames(alike_half.cosine.matrix) <- mlabelsCosineAlike
 colnames(alike_half.cosine.matrix) <- mlabelsCosineAlike
 rownames(alike_half) <- mlabelsAlike
@@ -78,30 +81,32 @@ colnames(alike_half) <- clabelsAlike
 alike_half.dist <- vegdist(alike_half)
 alike_half.mds0 <- monoMDS(alike_half.dist)
 
-
-
 mlabelsDiff <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\leastCorrolatedHalfManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
 clabelsDiff <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\leastCorrolatedHalfFeatureVector.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
 diff_half <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\leastCorrolatedHalfIDFFeatureMatrix.txt", header=FALSE)
 diff_half.cosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\leastCorrolatedHalfCosineMatrix.txt", header=FALSE)
-diff_half.cosine.matrix <- cor(as.matrix(diff_half.cosine))
+diff_half.cosine.matrix <- as.matrix(diff_half.cosine)
 rownames(diff_half.cosine.matrix) <- mlabelsDiff
 colnames(diff_half.cosine.matrix) <- mlabelsDiff
 rownames(diff_half) <- mlabelsDiff
-colnames(diff_half) <- mlabelsDiff
+colnames(diff_half) <- clabelsDiff
 diff_half.dist <- vegdist(diff_half)
 diff_half.mds0 <- monoMDS(diff_half.dist)
 
+save.image("C:\\Users\\tmwsiy\\Documents\\AllData.RData")
+
 // long
 diff_half.mds <- metaMDS(alike_half, trace=FALSE)
-alike_half.mds <- metaMDS(alike_half, trace=FALSE)
+full.mds <- metaMDS(full, trace=FALSE)
+old.mds <- metaMDS(old, trace=FALSE)
+only_out.mds <- metaMDS(only_out, trace=FALSE)
+no_out.mds <- metaMDS(no_out, trace=FALSE)
+alike_half.mds <- <- metaMDS(alike_half, trace=FALSE)
 
 
-mostCorrolatedHalf
 
-alike_half
 
-save.image("C:\\Users\\tmwsiy\\Documents\\AllData.RData")
+
 
 
 compfull.pca <- rda(compfull)
@@ -172,3 +177,8 @@ ordiplot(data.mds0, type="t")
 	cor(t(df), use="pairwise.complete.obs")
 	
 	cor(t(full), use="pairwise.complete.obs")
+	
+old.gc <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\onlyOldGlobalCounts.txt", header=FALSE,encoding="UTF-8")	
+colnames(old.gc) <- c('gram','count')
+old.idfgc <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\onlyOldGlobalIDFCounts.txt", header=FALSE,encoding="UTF-8")
+colnames(old.idfgc) <- c('gram','count')

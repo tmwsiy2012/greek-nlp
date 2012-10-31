@@ -62,22 +62,23 @@ public class RDataLoader {
     	      
     	      code.add(dataBase+".dist <- vegdist("+dataBase+")");
     	      code.add(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");
+    	      code.add(dataBase+".mds <- metaMDS("+dataBase+".dist)");
     	      if(saveChanges)
     	    	  code.add("save('C:/Users/tmwsiy/workspace/greektext/output/"+saveChangesFileName+".RData')");
     	      
     	     
-     	     // RCaller caller = new RCaller();
-     	     // RCode rCode = new RCode();
-     	      //caller.setRscriptExecutable(CU.Rexecutable);  
+     	      RCaller caller = new RCaller();
+     	      RCode rCode = new RCode();
+     	      caller.setRscriptExecutable(CU.Rexecutable);  
      	      for(String rCommand: code){
-     	    	  System.out.println(rCommand);
-     	    	  //rCode.addRCode(rCommand);
+     	    	  //System.out.println(rCommand);
+     	    	  rCode.addRCode(rCommand);
      	      }
- 		     // caller.setRCode(rCode);
- 		     // caller.redirectROutputToConsole();
- 		      //System.out.println("calling R "+dataBase);
- 		     // caller.runOnly();
- 		     // System.out.println("finished R.");		
+ 		     caller.setRCode(rCode);
+ 		     caller.redirectROutputToConsole();
+ 		     System.out.println("calling R "+dataBase);
+ 		     caller.runOnly();
+ 		     System.out.println("finished R.");		
     	      
     	      if(loadChapters)
     	    	  readChapters();
@@ -113,7 +114,7 @@ public class RDataLoader {
 		      
     	      code.add(chapDataBase+".gc <- read.csv('c:/users/tmwsiy/workspace/greektext/output/"+chapDataBase+"GlobalCounts.txt', header=FALSE,encoding='UTF-8')");	
     	      code.add("colnames("+chapDataBase+".gc) <- c('gram','count')");
-    	      code.add(chapDataBase+".idfgc <- read.csv('c:/users/tmwsiy/workspacegreektext/output/"+chapDataBase+"GlobalIDFCounts.txt', header=FALSE,encoding='UTF-8')");
+    	      code.add(chapDataBase+".idfgc <- read.csv('c:/users/tmwsiy/workspace/greektext/output/"+chapDataBase+"GlobalIDFCounts.txt', header=FALSE,encoding='UTF-8')");
     	      code.add("colnames("+chapDataBase+".idfgc) <- c('gram','count')");		      
 		      
 		      code.add(chapDataBase+".dist <- vegdist("+chapDataBase+")");

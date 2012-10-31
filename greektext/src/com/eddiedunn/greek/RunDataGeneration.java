@@ -19,8 +19,7 @@ public class RunDataGeneration {
 			dataWriter.setLoadChapters();
 			//if( i == 1)
 			//	dataWriter.setLoadDB();
-			dataWriter.setLoadRData();
-			
+			dataWriter.setLoadRData();			
 			dataWriter.runAndWriteResults();			
 		}
 		clock.printElapsedTime();
