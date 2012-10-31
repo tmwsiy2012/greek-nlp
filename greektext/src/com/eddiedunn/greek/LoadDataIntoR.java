@@ -10,13 +10,13 @@ public class LoadDataIntoR {
 	 */
 	public static void main(String[] args) {
 		RDataLoader ldr = null;
-		String[] baseFileNameList = {"fullSet","onlyOld","removeOutliers","onlyOutliers","mostCorrolatedHalf","leastCorrolatedHalf"};
-		String[] initialSQLList = {CU.selectAllManuscriptsSQL,CU.selectOldManuscriptsSQL,CU.selectAllManuscriptsRemoveOutliersSQL,CU.selectAllManuscriptsONLYOutliersSQL,CU.selectAllManuscriptsMostCorrolatedHalfSQL,CU.selectAllManuscriptsLeastCorrolatedHalfSQL};
+		String[] baseFileNameList = {"fullSet","onlyOld","removeOutliers","onlyOutliers","mostCorrolatedHalf","leastCorrolatedHalf"};		
 		for (int i = 1; i<2 /*i<initialSQLList.length*/; i++) {
 			ldr = new RDataLoader(baseFileNameList[i]);
 			ldr.setLoadChapters();
+			ldr.setSaveChangesFileName("PJdata");
 			//ldr.setLoadExistingWorkspace();		
-			//ldr.setSaveChanges();
+			ldr.setSaveChanges();
 			ldr.readDataSetIntoR();
 		}
 	}

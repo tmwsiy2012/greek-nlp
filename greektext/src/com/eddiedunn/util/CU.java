@@ -12,8 +12,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -59,6 +61,7 @@ public class CU {
 	public static final String numberTokenMatch = "\\s+[0-9]{2,3}c{0,1}\\s+|\\s+[0-9]{2,3}c{1}-[0-9]{2,3}c{0,1}\\s+";
 	public static final int minVerseLength=3;
 	public static final int minDocumentLength=75;
+	public static final int minChapLength=10;
 
 	public static final   int ngramMax=2; // 1 inherent min
 	public static final  int chargramMin=2;
@@ -333,12 +336,20 @@ public static boolean checkVerseString(String stringToCheck){
 	}	
 	public static  void writeCountMapToFile(SortedMap<String, Integer> mapToWrite, String fileName){
 		BufferedWriter out = null;
+		// resort by value of value
+        HashMap<String,Integer> map = new HashMap<String,Integer>();
+        ValueComparator bvc =  new ValueComparator(map);
+        TreeMap<String,Integer> sorted_map = new TreeMap<String,Integer>(bvc);	
+        for (SortedMap.Entry<String, Integer> o : mapToWrite.entrySet()) {
+        	map.put(o.getKey(),o.getValue());
+        }
+        sorted_map.putAll(map);
 		try {
 	        out = new BufferedWriter(new OutputStreamWriter
 	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
                 //(new FileOutputStream(System.getenv("USERPROFILE")+"\\Documents\\wordCount.csv"),"UTF8"));
 	        
-	        for (SortedMap.Entry<String, Integer> o : mapToWrite.entrySet()) {
+	        for (SortedMap.Entry<String, Integer> o : sorted_map.entrySet()) {
 	        	if(o.getValue().intValue() > 1)
 	        	out.write(o.getKey()+","+o.getValue().intValue()+"\n");
 	        }

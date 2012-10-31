@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.eddiedunn.util.CU;
+import com.mysql.jdbc.PreparedStatement;
 
 public class Corpus {
 
@@ -128,7 +129,7 @@ public class Corpus {
 	    	        	
 	    	        }	
 	    	       // System.out.println(chapBuf.toString());
-	    	        if( chapBuf.toString().length() > 10 )	    	        
+	    	        if( chapBuf.toString().length() > CU.minChapLength )	    	        
 	    	        tmpChapText.put(new Integer(chap), chapBuf.toString());
 	        	}
 	        	
@@ -159,6 +160,7 @@ public class Corpus {
 	public String getInitialSQL() {
 		return initialSQL;
 	}
+	
 	private void writeGlobalGramsToDB(SortedMap<String, Integer> globalGrams){
 		
 	    try {
@@ -175,10 +177,14 @@ public class Corpus {
 	        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        stmt = con.createStatement();
 	        
+	        int count =0;
 	        for(Map.Entry<String, Integer> g : globalGrams.entrySet() ){
-	        	stmt.executeUpdate("insert into grams_global(gram,count) values('"+g.getKey()+"',"+g.getValue().intValue()+");");
+	        	stmt.addBatch("insert into grams_global(gram,count) values('"+g.getKey()+"',"+g.getValue().intValue()+");");
 	        	if( g.getValue().intValue() > this.maxGramSize )
 	        		this.maxGramSize = g.getValue().intValue();
+	        	count++;
+	        	if( count % 10000 == 0)
+	        		stmt.executeBatch();
 	        }
 	
 	    
@@ -209,10 +215,12 @@ private void writeChapterGlobalGramsToDB(int chapter, SortedMap<String, Integer>
 	 
 	        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        stmt = con.createStatement();
-	        
-	        for(Map.Entry<String, Integer> g : globalGrams.entrySet() )
-	        	stmt.executeUpdate("insert into grams_global_by_chap(chapternumber,gram,count) values("+chapter+",'"+g.getKey()+"',"+g.getValue().intValue()+");");
-	
+	        int count =0;
+	        for(Map.Entry<String, Integer> g : globalGrams.entrySet() ){
+	        	stmt.addBatch("insert into grams_global_by_chap(chapternumber,gram,count) values("+chapter+",'"+g.getKey()+"',"+g.getValue().intValue()+");");
+	        	if( count % 1000 == 0)
+	        		stmt.executeBatch();	        	
+	        }
 	    
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -296,28 +304,13 @@ private void resetValuesforThisManuscriptInDB(){
 	}	
         return manuscriptids;
     }
-    public SortedMap<String,Integer> getUniqueFamilies(int levelToMatch){
-    	SortedMap<String,Integer> tmp = new TreeMap<String,Integer>();
-    	for(Map.Entry<String, Manuscript> m : manuScripts.entrySet() ){
-    		String key = m.getValue().getFamily(levelToMatch);
-    		if(tmp.containsKey(key)){
-    			int curr = tmp.get(key)+1;
-    			tmp.put(key, new Integer(curr));
-    		}else
-    			tmp.put(key, new Integer(1));
-    	}    	
-    	
-    	return tmp;
-    }
+
 
 
     public SortedMap<String, Manuscript> getManuScripts() {
 	return manuScripts;
     }
 
-    public SortedMap<String, Manuscript> getManuScripts(int chapter) {
-	return manuScripts;
-    }
 
     
     public void setManuScripts(SortedMap<String, Manuscript> manuScripts) {
@@ -395,8 +388,9 @@ private void resetValuesforThisManuscriptInDB(){
 	}
 	//CU.pruneMap(returnValue);
 	return returnValue;
-    }      
+    }     
     public SortedMap<String, Integer> getGrandCompositeGramsSum(int chap) {
+    	SortedMap<String, Integer> tmpCount = getGrandCompositeGramsCount(chap);   
 	SortedMap<String, Integer> tmp = new TreeMap<String, Integer>();
 	for (Map.Entry<String, Manuscript> m : manuScripts.entrySet()) {
 		CU.mergeMapSum(tmp, m.getValue().getCompositeGrams(chap));
@@ -404,9 +398,10 @@ private void resetValuesforThisManuscriptInDB(){
 	
 	SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
 	for (Map.Entry<String, Integer> gng : tmp.entrySet()) {
-	    int ngramcount =  tmp.get(gng.getKey()).intValue();
-	    if( ngramcount >1 )
-		returnValue.put(gng.getKey(),gng.getValue());
+	    //int ngramcount =  tmp.get(gng.getKey()).intValue();
+	    //if( ngramcount >1 )
+		if( tmpCount.containsKey(gng.getKey()))
+			returnValue.put(gng.getKey(),gng.getValue());
 	}
 	//CU.pruneMap(returnValue);
 	return returnValue;
@@ -623,7 +618,7 @@ private void resetValuesforThisManuscriptInDB(){
     public SortedMap<Integer, String> getChapDocs(int chap){
     	SortedMap<Integer, String> returnValue = new TreeMap<Integer, String>();
     	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
-    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > 10)
+    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > CU.minChapLength)
     			returnValue.put(m.getValue().getManuscriptID(), m.getValue().getText(chap));
     	}
     	return returnValue;
@@ -631,7 +626,7 @@ private void resetValuesforThisManuscriptInDB(){
     public SortedMap<String, String> getChapDocsName(int chap){
     	SortedMap<String, String> returnValue = new TreeMap<String, String>();
     	for (Map.Entry<String, Manuscript> m : this.manuScripts.entrySet()) {
-    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > 10)
+    		if( m.getValue().getText(chap) != null && m.getValue().getText(chap).length() > CU.minChapLength)
     			returnValue.put(m.getValue().getID(), m.getValue().getText(chap));
     	}
     	return returnValue;
@@ -795,6 +790,39 @@ private void resetValuesforThisManuscriptInDB(){
 	}
     }  
     
+    public void writeCurrentTFIDFFeatureMatrix(int chap, SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
+    	
+	BufferedWriter out = null;
+	try {
+        out = new BufferedWriter(new OutputStreamWriter
+        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+
+        SortedMap<String,String> tmpChapDocs =  getChapDocsName(chap);
+	
+	 for (Map.Entry<String, Manuscript> manuscript : this.manuScripts.entrySet()) {	 
+		 if( tmpChapDocs.containsKey(manuscript.getKey()) &&  manuscript.getValue().getText(chap).length() > CU.minChapLength ){
+	     StringBuffer line= new StringBuffer(); 
+	     
+	for (Map.Entry<String, Integer> grandGrams : tmpGrandNCharGrams.entrySet()) {
+
+	   if( manuscript.getValue().getnGramWeight().containsKey(grandGrams.getKey()) )	{
+	       line.append(manuscript.getValue().getnGramWeight().get(grandGrams.getKey())+",");
+	   }else
+	       line.append(0+",");
+
+	    }
+	    out.write(line.substring(0, line.length()-1)+CU.newline);	    
+	}
+	 }
+	} catch (Exception e) {
+		e.printStackTrace();
+	}finally{
+		try {
+			out.close();
+		} catch (Exception e2) {}
+	}
+    }  
+    
     public void writeCurrentTFIDFFeatureMatrixWithHeaders( SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
     	
 	BufferedWriter out = null;
@@ -855,9 +883,11 @@ private void resetValuesforThisManuscriptInDB(){
     	return this.manuScripts.keySet().toArray(new String[0]);    	
     }
     public String[] getManuscriptLabels(int chap){
+    	//manuscript.getValue().getnGramWeight().containsKey(grandGrams.getKey()) 
+    	SortedMap<String,String> tmpChapDocs =  getChapDocsName(chap);
     	ArrayList<String> returnValue = new ArrayList<String>();
     	for(Map.Entry<String, Manuscript> mj : this.manuScripts.entrySet()){
-    		if( mj.getValue().getText(chap).length() > 10 )
+    		if( tmpChapDocs.containsKey(mj.getKey())  )
     			returnValue.add(mj.getKey());
     	}
     	return returnValue.toArray(new String[0]);
