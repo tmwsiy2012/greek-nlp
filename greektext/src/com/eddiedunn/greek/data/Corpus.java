@@ -367,9 +367,11 @@ private void resetValuesforThisManuscriptInDB(){
 	
 	SortedMap<String, Integer> returnValue = new TreeMap<String, Integer>();
 	for (Map.Entry<String, Integer> gng : tmp.entrySet()) {
-	    int ngramcount =  tmp.get(gng.getKey()).intValue();
+	    int ngramcount =  tmp.get(gng.getKey()).intValue();	    
 	    if( ngramcount > 1)
 		returnValue.put(gng.getKey(),gng.getValue());
+	    if( ngramcount > this.manuScripts.size() )
+	    	System.out.println("Big Problem!");
 	}
 	//CU.pruneMap(returnValue);
 	return returnValue;

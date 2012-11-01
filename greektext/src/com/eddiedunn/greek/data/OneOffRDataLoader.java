@@ -7,7 +7,7 @@ import rcaller.RCode;
 
 import com.eddiedunn.util.CU;
 
-public class RDataLoader {
+public class OneOffRDataLoader {
 
 	/**
 	 * @param args
@@ -19,7 +19,7 @@ public class RDataLoader {
 	String saveChangesFileName;
 	
 	
-	public RDataLoader(String dataBase) {		
+	public OneOffRDataLoader(String dataBase) {		
 		this.dataBase = dataBase;
 		this.loadChapters=false;
 		this.loadExistingWorkspace=false;
@@ -41,7 +41,7 @@ public class RDataLoader {
  	      
 
 
-    	      code.add("library(vegan)");
+/*    	      code.add("library(vegan)");
     	      if( loadExistingWorkspace )
     	    	  code.add("load('C:/Users/tmwsiy/workspace/greektext/output/"+saveChangesFileName+".RData')");    	          	      
     	      
@@ -61,9 +61,13 @@ public class RDataLoader {
     	      code.add("colnames("+dataBase+".idfgc) <- c('gram','count')");
     	      
     	      code.add(dataBase+".dist <- vegdist("+dataBase+")");
-    	      code.add(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");
-    	      code.add(dataBase+".mds <- metaMDS("+dataBase+", trace=FALSE)");
-    	      if(saveChanges)
+    	      code.add(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");*/
+    	      //code.add(dataBase+".mds <- metaMDS("+dataBase+", trace=FALSE)");
+    	      
+    	      System.out.println("system.time("+dataBase+".cca <- cca("+dataBase+"))");
+    	      System.out.println("save('AllData.RData')");
+    	      
+/*    	      if(saveChanges)
     	    	  code.add("save('C:/Users/tmwsiy/workspace/greektext/output/"+saveChangesFileName+".RData')");
     	      
     	     
@@ -79,7 +83,7 @@ public class RDataLoader {
  		     System.out.println("calling R "+dataBase);
  		     caller.runOnly();
  		     System.out.println("finished R.");		
-    	      
+    	      */
     	      if(loadChapters)
     	    	  readChapters();
     	      
@@ -98,7 +102,7 @@ public class RDataLoader {
 			try {
 				// first build up arraylist of R commands
 	    	      ArrayList<String> code = new ArrayList<String>();
-
+/*
 		      if( loadExistingWorkspace )
 		    	  code.add("load('C:/Users/tmwsiy/workspace/greektext/output/"+chapSaveChangesFileName+".RData')");
 		
@@ -118,10 +122,11 @@ public class RDataLoader {
     	      code.add("colnames("+chapDataBase+".idfgc) <- c('gram','count')");		      
 		      
 		      code.add(chapDataBase+".dist <- vegdist("+chapDataBase+")");
-		      code.add(chapDataBase+".mds0 <- monoMDS("+chapDataBase+".dist)");
-		      code.add(chapDataBase+".mds <- metaMDS("+chapDataBase+", trace=FALSE)");
-		      
-		      
+		      code.add(chapDataBase+".mds0 <- monoMDS("+chapDataBase+".dist)");*/
+		      //code.add(chapDataBase+".mds <- metaMDS("+chapDataBase+", trace=FALSE)");
+		      System.out.println("system.time("+chapDataBase+".cca <- cca("+chapDataBase+"))");
+		      System.out.println("save('AllData.RData')");
+/*		      
     	      if(saveChanges)
      	    	 code.add("save('C:/Users/tmwsiy/workspace/greektext/output/"+chapSaveChangesFileName+".RData')");
 		      
@@ -138,7 +143,7 @@ public class RDataLoader {
 		     System.out.println("calling R "+chapDataBase);
 		     caller.runOnly();
 		     System.out.println("finished R.");		      
-		      
+		      */
 		
 		    } catch (Exception e) {
 		      e.printStackTrace();

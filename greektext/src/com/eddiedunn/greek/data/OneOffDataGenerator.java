@@ -28,55 +28,55 @@ public class OneOffDataGenerator {
 		//public Corpus(String selectSQL, boolean loadChapters)
 		Corpus c = new Corpus(initialSQL,this.loadChapters);
 		
-		System.out.println("created Corpus");
+		System.out.println(fileNameBase+" created Corpus");
 		if( loadDB)
 		   c.setLoadGramsIntoDB();
 		
 		c.initializeDB();
 		clock.printElapsedTime();
-		System.out.println("considering "+c.getManuScripts().size()+" manuscripts");
+		System.out.println(fileNameBase+" considering "+c.getManuScripts().size()+" manuscripts");
 		
 		SortedMap<String, Integer> tmpGrandCompositeGrams = c.getGrandCompositeGramsSum();
-		System.out.println("totalTokens: "+tmpGrandCompositeGrams.size());
+		System.out.println(fileNameBase+" totalTokens: "+tmpGrandCompositeGrams.size());
 		
 		runCompositeGramTF_IDFFeature(c, tmpGrandCompositeGrams, fileNameBase);		
 		if(loadChapters){
 			for(int chap=1; chap<=25; chap++){				
 				tmpGrandCompositeGrams = c.getGrandCompositeGramsSum(chap);
 			
-				System.out.println("chap "+chap+" totalTokens: "+tmpGrandCompositeGrams.size());
+				System.out.println(fileNameBase+" chap "+chap+" totalTokens: "+tmpGrandCompositeGrams.size());
 				runCompositeGramTF_IDFFeature(chap, c, tmpGrandCompositeGrams, fileNameBase);
 			}
 		}
 		clock.printElapsedTime();
 		if(loadRData){
-			System.out.println("starting to load "+fileNameBase+" data into R");
+			System.out.println(fileNameBase+" starting to load "+fileNameBase+" data into R");
 			StopWatch Rclock = new StopWatch("started "+fileNameBase+" R data load");
 			RDataLoader ldr = new RDataLoader(fileNameBase);
 			if(loadChapters)
 				ldr.setLoadChapters();			
-			ldr.setLoadExistingWorkspace();
-			ldr.setSaveChanges();
+			//ldr.setLoadExistingWorkspace();
+			//ldr.setSaveChanges();
 			ldr.readDataSetIntoR();
-			System.out.println("finished load "+fileNameBase+" data into R");
+			System.out.println(fileNameBase+" finished load "+fileNameBase+" data into R");
 			Rclock.printElapsedTime();
 		}
 	}
-	private static void runCompositeGramTF_IDFFeature(int chap, Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams,String fileNameBase){
-		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
+	private static void runCompositeGramTF_IDFFeature(int chap, Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams,String fileNameBase){		
+		ArrayList<String> tmp = new ArrayList<String>(c.getGrandCompositeGramsCount(chap).keySet());
 		CU.writeCountMapToFile(tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"GlobalCounts");
 		CU.writeCountMapToFile(c.getGrandCompositeGramsCount(chap), fileNameBase+"Chap"+String.format("%02d", chap)+"GlobalIDFCounts");
 		CU.writeVectorToFile(tmp.toArray(new String[0]), fileNameBase+"Chap"+String.format("%02d", chap)+"FeatureVector");
 		CU.writeVectorToFile(c.getManuscriptLabels(chap), fileNameBase+"Chap"+String.format("%02d", chap)+"ManuscriptNameVector");
 		
-		//c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams, chap);
-		//System.out.println("chap "+chap+" finished calculate");
-		//c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"IDFFeatureMatrix");
-		//System.out.println("chap "+chap+" finished write feature matrix");
-		//c.calculateNormalizedCompositeGramWeights(chap,tmpGrandCompositeGrams);
-		//System.out.println("chap "+chap+" finished normalize");	
-		//c.writeCurrentCosineMatrix(chap,tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"CosineMatrix");
-		//System.out.println("chap "+chap+" finished");		
+		c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams, chap);
+		System.out.println(fileNameBase+" chap "+chap+" finished calculate");
+		c.writeCurrentTFIDFFeatureMatrix(chap,tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"IDFFeatureMatrix");
+		System.out.println(fileNameBase+" chap "+chap+" finished write feature matrix");
+		c.calculateNormalizedCompositeGramWeights(chap,tmpGrandCompositeGrams);
+		System.out.println(fileNameBase+" chap "+chap+" finished normalize");	
+		c.writeCurrentCosineMatrix(chap,tmpGrandCompositeGrams, fileNameBase+"Chap"+String.format("%02d", chap)+"CosineMatrix");
+		System.out.println(fileNameBase+" chap "+chap+" finished");		
 	}	
 	private static void runCompositeGramTF_IDFFeature(Corpus c, SortedMap<String, Integer> tmpGrandCompositeGrams,String fileNameBase){
 		ArrayList<String> tmp = new ArrayList<String>(tmpGrandCompositeGrams.keySet());
@@ -86,14 +86,14 @@ public class OneOffDataGenerator {
 		CU.writeVectorToFile(c.getManuscriptLabels(), fileNameBase+"ManuscriptNameVector");
     	
 		
-		//c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams);
-		//System.out.println("finished calculate");
-		//c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, fileNameBase+"IDFFeatureMatrix");
-		//System.out.println("finished write feature matrix");
-		//c.calculateNormalizedCompositeGramWeights(tmpGrandCompositeGrams);
-		//System.out.println("finished normalize");
-		//c.writeCurrentCosineMatrix(tmpGrandCompositeGrams, fileNameBase+"CosineMatrix");
-		//System.out.println("finished");
+		c.calculateTF_IDF_CompositeGramWeights( tmpGrandCompositeGrams);
+		System.out.println(fileNameBase+" finished calculate");
+		c.writeCurrentTFIDFFeatureMatrix(tmpGrandCompositeGrams, fileNameBase+"IDFFeatureMatrix");
+		System.out.println(fileNameBase+" finished write feature matrix");
+		c.calculateNormalizedCompositeGramWeights(tmpGrandCompositeGrams);
+		System.out.println(fileNameBase+" finished normalize");
+		c.writeCurrentCosineMatrix(tmpGrandCompositeGrams, fileNameBase+"CosineMatrix");
+		System.out.println(fileNameBase+" finished");
 		
 	}	
 	public void setLoadDB() {
