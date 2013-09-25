@@ -41,7 +41,7 @@ public class OneOffRDataLoader {
  	      
 
 
-/*    	      code.add("library(vegan)");
+    	      //code.add("library(vegan)");
     	      if( loadExistingWorkspace )
     	    	  code.add("load('C:/Users/tmwsiy/workspace/greektext/output/"+saveChangesFileName+".RData')");    	          	      
     	      
@@ -61,13 +61,13 @@ public class OneOffRDataLoader {
     	      code.add("colnames("+dataBase+".idfgc) <- c('gram','count')");
     	      
     	      code.add(dataBase+".dist <- vegdist("+dataBase+")");
-    	      code.add(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");*/
+    	      //code.add(dataBase+".mds0 <- monoMDS("+dataBase+".dist)");*/
     	      //code.add(dataBase+".mds <- metaMDS("+dataBase+", trace=FALSE)");
     	      
-    	      System.out.println("system.time("+dataBase+".cca <- cca("+dataBase+"))");
-    	      System.out.println("save('AllData.RData')");
+    	     // System.out.println("system.time("+dataBase+".cca <- cca("+dataBase+"))");
+    	      //System.out.println("save('AllData.RData')");
     	      
-/*    	      if(saveChanges)
+    	      if(saveChanges)
     	    	  code.add("save('C:/Users/tmwsiy/workspace/greektext/output/"+saveChangesFileName+".RData')");
     	      
     	     
@@ -75,15 +75,15 @@ public class OneOffRDataLoader {
      	      RCode rCode = new RCode();
      	      caller.setRscriptExecutable(CU.Rexecutable);  
      	      for(String rCommand: code){
-     	    	  //System.out.println(rCommand);
-     	    	  rCode.addRCode(rCommand);
+     	    	  System.out.println(rCommand);
+     	    	  //rCode.addRCode(rCommand);
      	      }
  		     caller.setRCode(rCode);
  		     caller.redirectROutputToConsole();
  		     System.out.println("calling R "+dataBase);
  		     caller.runOnly();
  		     System.out.println("finished R.");		
-    	      */
+    	      
     	      if(loadChapters)
     	    	  readChapters();
     	      
@@ -102,11 +102,11 @@ public class OneOffRDataLoader {
 			try {
 				// first build up arraylist of R commands
 	    	      ArrayList<String> code = new ArrayList<String>();
-/*
+
 		      if( loadExistingWorkspace )
 		    	  code.add("load('C:/Users/tmwsiy/workspace/greektext/output/"+chapSaveChangesFileName+".RData')");
 		
-		      code.add("library(vegan)");  	     
+		      //code.add("library(vegan)");  	     
 		      code.add("clabels <- scan('c:/users/tmwsiy/workspace/greektext/output/"+chapDataBase+"FeatureVector.txt',what=character(),sep=',',nlines=1,encoding='UTF-8')");		      
     	      code.add("rlabels <- scan('c:/users/tmwsiy/workspace/greektext/output/"+chapDataBase+"ManuscriptNameVector.txt',what=character(),sep=',',nlines=1)");    	      
     	      code.add(chapDataBase+" <- read.csv('c:/users/tmwsiy/workspace/greektext/output/"+chapDataBase+"IDFFeatureMatrix.txt', header=FALSE)");
@@ -122,11 +122,11 @@ public class OneOffRDataLoader {
     	      code.add("colnames("+chapDataBase+".idfgc) <- c('gram','count')");		      
 		      
 		      code.add(chapDataBase+".dist <- vegdist("+chapDataBase+")");
-		      code.add(chapDataBase+".mds0 <- monoMDS("+chapDataBase+".dist)");*/
+		      //code.add(chapDataBase+".mds0 <- monoMDS("+chapDataBase+".dist)");*/
 		      //code.add(chapDataBase+".mds <- metaMDS("+chapDataBase+", trace=FALSE)");
-		      System.out.println("system.time("+chapDataBase+".cca <- cca("+chapDataBase+"))");
-		      System.out.println("save('AllData.RData')");
-/*		      
+		      //System.out.println("system.time("+chapDataBase+".cca <- cca("+chapDataBase+"))");
+		      //System.out.println("save('AllData.RData')");
+		      
     	      if(saveChanges)
      	    	 code.add("save('C:/Users/tmwsiy/workspace/greektext/output/"+chapSaveChangesFileName+".RData')");
 		      
@@ -135,15 +135,15 @@ public class OneOffRDataLoader {
     	     RCode rCode = new RCode();
     	     caller.setRscriptExecutable(CU.Rexecutable);  
     	      for(String rCommand: code){
-    	    	  //System.out.println(rCommand);
-    	    	  rCode.addRCode(rCommand);
+    	    	  System.out.println(rCommand);
+    	    	  //rCode.addRCode(rCommand);
     	      }
-		     caller.setRCode(rCode);
-		     caller.redirectROutputToConsole();
-		     System.out.println("calling R "+chapDataBase);
-		     caller.runOnly();
-		     System.out.println("finished R.");		      
-		      */
+		     //caller.setRCode(rCode);
+		     //caller.redirectROutputToConsole();
+		    // System.out.println("calling R "+chapDataBase);
+		     //caller.runOnly();
+		     //System.out.println("finished R.");		      
+		      
 		
 		    } catch (Exception e) {
 		      e.printStackTrace();

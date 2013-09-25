@@ -44,7 +44,7 @@ public class CU {
 	public static final String selectAllManuscriptsLeastCorrolatedHalfSQL = "SELECT manuscriptid,name FROM manuscript where  name IN ("+outlierHalf+",'031') AND name NOT IN ('807') order by name";
 	public static final String selectAllManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name not like '%c%' AND name NOT IN ('807') order by name";
 	public static final String selectOldManuscriptsSQL = "SELECT manuscriptid,name FROM manuscript where name in ('031','041','061','081','083','091','092','093','094','001','002','003','004','005','006','101','102','103','104','105','106','107','108','109','110','111','112','113','114','115','116','117','118') order by name";
-	public static final String selecttestSQL = "SELECT manuscriptid,name FROM manuscript where name in ('401','403','404','405','411','503','102','103','118') order by name";
+	public static final String selecttestSQL = "SELECT manuscriptid,name FROM manuscript where name in ('031','041','061','081','083','091','092','093','094') order by name";
 	
 	public static final String db_connstr = "jdbc:mysql://localhost:3306/greektext";
 	public static final String db_username = "tmwsiy";

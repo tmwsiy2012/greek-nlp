@@ -52,16 +52,13 @@ ordiplot(data.mds0, type="t")
 
 
 
-mlabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
-clabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetFeatureVector.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
-full <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetIDFFeatureMatrix.txt", header=FALSE)
-full.cosine <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\fullSetCosineMatrix.txt", header=FALSE)
-full.cosine.matrix <-
+mlabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\reallyOldManuscriptNameVector.txt",what=character(),sep=",",nlines=1)
+clabelsFull <- scan("c:\\users\\tmwsiy\\workspace\\greektext\\output\\reallyOldFeatureVector.txt",what=character(),sep=",",nlines=1,encoding="UTF-8")
+reallyOld <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\reallyOldIDFFeatureMatrix.txt", header=FALSE)
 rownames(full) <- mlabelsFull
 colnames(full) <- clabelsFull
-row
-full.dist <- vegdist(full)
-full.mds0 <- monoMDS(full)
+reallyOld.dist <- vegdist(reallyOld)
+reallyOld.deco <- decorana(reallyOld.dist)
 
 
 
@@ -182,3 +179,24 @@ old.gc <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\onlyOldGlob
 colnames(old.gc) <- c('gram','count')
 old.idfgc <- read.csv("c:\\users\\tmwsiy\\workspace\\greektext\\output\\onlyOldGlobalIDFCounts.txt", header=FALSE,encoding="UTF-8")
 colnames(old.idfgc) <- c('gram','count')
+
+fullSet.dist <- vegdistfullSet)
+fullSet.mds0 <- monoMDS(fullSet.dist)
+fullSet.mds <- metaMDS(fullSet.dist)
+fullSet.cca <- cca(fullSet.dist)
+
+
+ordiplot(reallyOld.deco, display="si", type="t",main="DCA Really Old Set")
+
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set")
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group A",xlim=c(-0.03,0.005),ylim=c(-0.005,0.03))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group B",xlim=c(-0.03,0.05),ylim=c(-0.045,-0.03))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group C",xlim=c(-0.001,0.034),ylim=c(0.01,0.045))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group D",xlim=c(-0.1,-0.03),ylim=c(0.01,0.03))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group E",xlim=c(0.04,0.08),ylim=c(0.035,0.075))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group F",xlim=c(0.02,0.06),ylim=c(-0.105,-0.08))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group G",xlim=c(0.082,0.125),ylim=c(0.01,0.045))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group H",xlim=c(-0.01,0.01),ylim=c(-0.13,-0.1))
+ordiplot(fullSet.deco, display="si", type="t",main="DCA Full Set Group I",xlim=c(-0.22,-0.17),ylim=c(-0.01,0.01))
+
+corrplot(fullSet.cosine, order="hclust", tl.cex=.3)

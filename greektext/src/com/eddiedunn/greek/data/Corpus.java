@@ -547,6 +547,7 @@ private void resetValuesforThisManuscriptInDB(){
 	    
 	}
     }    
+
     public void writeCurrentCosineMatrix(int chap,SortedMap<String, Integer> tmpGrandNCharGrams, String fileName) {
     	BufferedWriter out = null;
     	try {
