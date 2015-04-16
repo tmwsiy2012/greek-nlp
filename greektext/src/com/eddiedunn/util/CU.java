@@ -24,6 +24,8 @@ import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import com.eddiedunn.greek.data.VerseFile;
 
@@ -196,22 +198,26 @@ public class CU {
 	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}	
-	public static HWPFDocument getWordDocument(String fileName){
-		HWPFDocument doc = null;
+	public static XWPFDocument getWordDocument(String fileName){
+		XWPFDocument doc = null;
 		try {
 			//String fileName = System.getenv("USERPROFILE")+"\\workspace\\greektext\\data\\test\\PJ 06\\BDGZ 6 rev\\BDGZ 6 09\\BDGZ06 09 verse.doc";
-			FileInputStream fis = new FileInputStream(fileName);
-			POIFSFileSystem fs = new POIFSFileSystem(fis);
-	        doc = new HWPFDocument(fs);			        
+			System.out.println(fileName);
+			FileInputStream fs = new FileInputStream(fileName);
+			//POIFSFileSystem fs = new POIFSFileSystem(fis);
+	        doc = new XWPFDocument(fs);			        
 		}    catch(IOException e2){
 	    	e2.printStackTrace();
 	    }
 		return doc;
 	}
-	public static VerseFile getVerseFile( HWPFDocument doc, String fileName){
-		WordExtractor we = new WordExtractor(doc);
+	public static VerseFile getVerseFile( XWPFDocument doc, String fileName){
+		XWPFWordExtractor we = new XWPFWordExtractor(doc);
 		VerseFile returnValue = new VerseFile();
 		ArrayList<String> baseTexts = new ArrayList<String>();
+		
+		System.out.println(we.getText());
+		
 		try{
 
       	
@@ -292,6 +298,8 @@ public class CU {
         returnValue = new VerseFile(verse, realBaseTexts, we.getText(),fileName);
     }
 		
+		
+			
 		 return returnValue;
 	}
 public static boolean checkVerseString(String stringToCheck){
