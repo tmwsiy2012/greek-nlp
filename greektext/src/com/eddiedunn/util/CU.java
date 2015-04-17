@@ -13,19 +13,25 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.hwpf.usermodel.CharacterRun;
 import org.apache.poi.hwpf.usermodel.Range;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.IBodyElement;
+import org.apache.poi.xwpf.usermodel.IRunElement;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import com.eddiedunn.greek.data.VerseFile;
 
@@ -212,95 +218,48 @@ public class CU {
 		return doc;
 	}
 	public static VerseFile getVerseFile( XWPFDocument doc, String fileName){
-		XWPFWordExtractor we = new XWPFWordExtractor(doc);
-		VerseFile returnValue = new VerseFile();
-		ArrayList<String> baseTexts = new ArrayList<String>();
-		
-		System.out.println(we.getText());
-		
-		try{
-
-      	
-        for (int i = 0; i < we.getText().length() - 2; i++) {
-            int startIndex = i;
-            int endIndex = i + 1;
-            Range range = new Range(startIndex, endIndex, doc);
-            //System.out.println(we.getText().length()+" "+startIndex+" "+endIndex);
-            CharacterRun cr = range.getCharacterRun(0);
-            
-            	//System.out.println("cr.text() "+cr.text()+ " : "+(int)cr.text().charAt(0));
-
-            if (cr.getUnderlineCode() != 0) {
-                while ((cr.getUnderlineCode() != 0) && (13 != (int)cr.text().charAt(0))) {
-                    i++;
-                    endIndex += 1;
-                    range = new Range(endIndex, endIndex + 1, doc);
-                    cr = range.getCharacterRun(0);
-                }
-                if(13 == (int)cr.text().charAt(0) )
-                	range = new Range(startIndex, endIndex, doc);
-                else
-                	range = new Range(startIndex, endIndex - 1, doc);
-               // System.out.println("*"+range.text()+"*");
-                if( range.text().length() > 2)
-                	baseTexts.add(range.text());
-            } 
-
-        }
-	// This is not the best but this block should mimic the IllegalArgumentException catch block
-	// below it hits there more often than not but it does what is necessary        
-        int k=0;
-        String verse = baseTexts.get(0);
-        while( !CU.checkVerseString(verse)){
-            System.out.println(verse);
-            k++;
-            verse = baseTexts.get(k);
-        }
-           System.out.println(verse);
-           System.out.println("basetexts size before remove: "+baseTexts.size());
-           ArrayList<String> realBaseTexts = new ArrayList<String>();
-        for (int i = k+1; i < baseTexts.size(); i++) {
-            realBaseTexts.add(baseTexts.get(i));
-	}
-        System.out.println("basetexts size after: "+realBaseTexts.size());
-        for (int i = 0; i < realBaseTexts.size(); i++) {
-	    System.out.println("*"+realBaseTexts.get(i)+"*");
-	}
-                
-        returnValue = new VerseFile(verse, realBaseTexts, we.getText(),fileName);
-       
-    }
-    catch (IndexOutOfBoundsException iobe) {
-       iobe.printStackTrace();
-    }
-    catch(IllegalArgumentException e1){
-    	//e1.printStackTrace();
-	// This is not the best but this block should mimic the last bit of the associated try block
-	// it hits here more often than not but it does what is necessary
-        int k=0;
-        String verse = baseTexts.get(0);
-        while( !CU.checkVerseString(verse)){
-           System.out.println(fileName);
-            k++;
-            verse = baseTexts.get(k);
-        }
-          // System.out.println(verse);
-           //System.out.println("basetexts size before remove: "+baseTexts.size());
-           ArrayList<String> realBaseTexts = new ArrayList<String>();
-        for (int i = k+1; i < baseTexts.size(); i++) {
-            realBaseTexts.add(baseTexts.get(i).trim());
-	}
-        //System.out.println("basetexts size after: "+realBaseTexts.size());
-       // for (int i = 0; i < realBaseTexts.size(); i++) {
-	//    System.out.println("*"+realBaseTexts.get(i)+"*");
-	//}
-                
-        returnValue = new VerseFile(verse, realBaseTexts, we.getText(),fileName);
-    }
-		
-		
+		List<XWPFParagraph> paragraphs =  doc.getParagraphs();
+		String chap  = fileName.split(" ")[1];
+		String verse = fileName.split(" ")[2].substring(0, 2);
+		System.out.println(chap+":"+verse);
+		String fullText = new String();
+		ArrayList<String> baseTextLines = new ArrayList<String>();
+		for (XWPFParagraph para : paragraphs){
+			List<XWPFRun> runs =  para.getRuns();
+			boolean bold =false;
+			ArrayList<String> paraLine = new ArrayList<String>();
+			if( runs != null ) {
+				for( XWPFRun r : runs ){
+					
+					if( r.isBold() ){
+						bold=true;
+					}
+					paraLine.add(r.getText(0));
+					//System.out.print(r.getText(0));
+				}
+				
+				//System.out.println();
 			
-		 return returnValue;
+			}
+			String lineToAdd = new String();
+
+			
+			for (String str : paraLine){
+				lineToAdd= lineToAdd+str;
+				//System.out.print(str);
+			}
+			if ( bold == true ){
+				baseTextLines.add(lineToAdd.trim());
+				//System.out.print("BASE: ");
+			}			
+			//System.out.println(lineToAdd);
+			fullText = fullText + "\n" + lineToAdd.trim();
+		}
+		//XWPFWordExtractor we = new XWPFWordExtractVerseFile returnValue = new VerseFile();
+
+		
+		return new VerseFile(chap+":"+verse, baseTextLines, fullText,fileName);
+		 
 	}
 public static boolean checkVerseString(String stringToCheck){
     boolean returnvalue = false;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class VerseFile {
 	private String chapverse;
-	private ArrayList<String> underlinedText;
+	private ArrayList<String> bodmerText;
 	private String documentText;
 	private String fileName;
 	private int chapNum;
@@ -14,9 +14,9 @@ public class VerseFile {
 	public VerseFile(){
 		
 	}
-	public VerseFile(String chapverse, ArrayList<String> underLinedText, String documentText, String fileName){
+	public VerseFile(String chapverse, ArrayList<String> bodmerText, String documentText, String fileName){
 		this.chapverse = chapverse;
-		this.underlinedText = underLinedText;
+		this.bodmerText = bodmerText;
 		this.documentText = documentText;
 		this.fileName = fileName;
 		setChapAndVerse();
@@ -31,7 +31,7 @@ public class VerseFile {
 		return chapverse;
 	}
 	public ArrayList<String> getUnderlinedText() {
-		return underlinedText;
+		return bodmerText;
 	}
 	public String getDocumentText() {
 		return documentText;
@@ -54,7 +54,7 @@ public class VerseFile {
 	}
 	public void printVerseFile(){
 		System.out.println("Verse: "+chapverse);
-		for(String str: underlinedText){
+		for(String str: bodmerText){
 			System.out.println("BaseText: "+ str);
 		}
 		System.out.println(documentText);

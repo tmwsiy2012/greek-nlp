@@ -37,7 +37,7 @@ public class WordDataReader {
 		System.out.println("processing "+physicalVerseFiles.length+" files");
 		for (int i=0; i < physicalVerseFiles.length;i++) {
 		//for (String verseFile : verseFiles) {
-			if (!physicalVerseFiles[i].equalsIgnoreCase(".svn")) {
+			if (!physicalVerseFiles[i].equalsIgnoreCase(".git")) {
 			    count++;
 			    System.out.println("Processing file: "+physicalVerseFiles[i]);
 			    if( count % 25 == 0)
@@ -102,7 +102,7 @@ public class WordDataReader {
 		
 		boolean matchedBaseText = false;
 
-		    //System.out.println(verseFile.getDocumentText());
+		    //System.out.println(vf.getDocumentText());
 		    try {
 			    int i=0,lineNumber=0;
 			    BufferedReader documentTextReader = new BufferedReader(new StringReader(vf.getDocumentText()));
@@ -110,7 +110,7 @@ public class WordDataReader {
 			    while( null != line){
 				String trimmedLine = line.trim();
 				// ignore null, empty,comment and verse/file lines
-				if( trimmedLine.length() == 0 || trimmedLine.startsWith("#") || CU.checkVerseString(trimmedLine)){
+				if( trimmedLine.length() == 0 || trimmedLine.startsWith("#") || trimmedLine.startsWith("CHAPTER") || CU.checkVerseString(trimmedLine)){
 				    line = documentTextReader.readLine();
 				    continue;
 				}
