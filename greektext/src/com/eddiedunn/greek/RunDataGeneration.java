@@ -14,12 +14,11 @@ public class RunDataGeneration {
 		String[] baseFileNameList = {"reallyOld","fullSet","onlyOld","removeOutliers","onlyOutliers","mostCorrolatedHalf","leastCorrolatedHalf"};
 		String[] initialSQLList = {CU.selecttestSQL,CU.selectAllManuscriptsSQL,CU.selectOldManuscriptsSQL,CU.selectAllManuscriptsRemoveOutliersSQL,CU.selectAllManuscriptsONLYOutliersSQL,CU.selectAllManuscriptsMostCorrolatedHalfSQL,CU.selectAllManuscriptsLeastCorrolatedHalfSQL};
 		StopWatch clock = new StopWatch("start of data generation run");
-		for (int i = 0;  i<1/*initialSQLList.length*/; i++) {
+		for (int i = 0; i<initialSQLList.length; i++) {
 			dataWriter = new DataGenerator(baseFileNameList[i], initialSQLList[i]);
-			dataWriter.setLoadChapters();
+			//dataWriter.setLoadChapters();
 			//if( i == 1)
 			//	dataWriter.setLoadDB();
-			dataWriter.setLoadRData();			
 			dataWriter.runAndWriteResults();			
 		}
 		clock.printElapsedTime();

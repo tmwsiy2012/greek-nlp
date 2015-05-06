@@ -39,7 +39,7 @@ public class WordDataReader {
 		//for (String verseFile : verseFiles) {
 			if (!physicalVerseFiles[i].equalsIgnoreCase(".git")) {
 			    count++;
-			    System.out.println("Processing file: "+physicalVerseFiles[i]);
+			    //System.out.println("Processing file: "+physicalVerseFiles[i]);
 			    if( count % 25 == 0)
 				System.out.println("processed "+count+" files");
 			    
@@ -98,7 +98,11 @@ public class WordDataReader {
 
 	
 	public void insertVerseFileLines(VerseFile vf) {
-
+		try {
+			Thread.sleep(500);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 		
 		boolean matchedBaseText = false;
 
@@ -106,11 +110,12 @@ public class WordDataReader {
 		    try {
 			    int i=0,lineNumber=0;
 			    BufferedReader documentTextReader = new BufferedReader(new StringReader(vf.getDocumentText()));
-			    String line = documentTextReader.readLine();				    
+			    String line = documentTextReader.readLine();	
+			    boolean prevBaseText = false;
 			    while( null != line){
 				String trimmedLine = line.trim();
 				// ignore null, empty,comment and verse/file lines
-				if( trimmedLine.length() == 0 || trimmedLine.startsWith("#") || trimmedLine.startsWith("CHAPTER") || CU.checkVerseString(trimmedLine)){
+				if( trimmedLine.length() == 0 || trimmedLine.startsWith("#") || trimmedLine.startsWith("CHAPTER") || CU.checkVerseString(trimmedLine)){					
 				    line = documentTextReader.readLine();
 				    continue;
 				}
@@ -125,13 +130,20 @@ public class WordDataReader {
 				}
 				// write verseFileLine into DB
 				//writeVerseLine
-				insertVerseFileLine(vf.getVfid(),isBaseText,trimmedLine);
 				
-				// reset isBaseText for good measure :P
-				isBaseText = false;
+				insertVerseFileLine(vf.getVfid(),isBaseText,prevBaseText,trimmedLine.replace("null", ""));
+				
+
+				if (isBaseText ){
+					prevBaseText = true;
+				}else{
+					prevBaseText = false;
+				}
+
 				
 				line = documentTextReader.readLine();
-			    }	
+			    }	// end main while
+			    
 			    if( lineNumber == 0){
 				System.err.println("Problem with file: "+vf.getFileName()+" no data was read.. Exiting");
 				System.exit(0);
@@ -140,14 +152,15 @@ public class WordDataReader {
 			e.printStackTrace();
 		    }
 
-		if( ! matchedBaseText ){
+		if( ! matchedBaseText && vf.getUnderlinedText().size() > 0 ){
 			System.err.println("Problem with file: "+vf.getFileName()+" no base texts were matched.. Exiting");
 			System.exit(0);
 		}
 		   
 		
 	}
-	private void insertVerseFileLine(int vfid, boolean isBaseText, String lineText){
+	private void insertVerseFileLine(int vfid, boolean isBaseText, boolean prevBaseText,  String lineText){
+
 	        try {
 	            Class.forName("com.mysql.jdbc.Driver");
 	        } catch (ClassNotFoundException ex) {
@@ -160,7 +173,8 @@ public class WordDataReader {
 		 
 		        con = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 		        stmt = con.createStatement();
-		        stmt.executeUpdate("INSERT INTO versefilelines (documentid,versefileid,isbasetext,text) VALUES(1,"+vfid +","+isBaseText+",'"+lineText+"');");
+		        //System.out.println("INSERT INTO versefilelines (documentid,versefileid,isbasetext,text,prevbasetext) VALUES(1,"+vfid +","+isBaseText+",'"+lineText+"',"+prevBaseText+");");
+		        stmt.executeUpdate("INSERT INTO versefilelines (documentid,versefileid,isbasetext,text,prevbasetext) VALUES(1,"+vfid +","+isBaseText+",'"+lineText+"',"+prevBaseText+");");
 
 
 		    
@@ -169,7 +183,10 @@ public class WordDataReader {
 		    e.printStackTrace();
 		}finally{
 		    try {
-		        con.close();	
+		    	if( stmt != null)
+		    		stmt.close();
+		    	if ( con != null)
+		    		con.close();	
 		    } catch (Exception e2) {
 			e2.printStackTrace();
 		    }

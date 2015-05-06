@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -29,6 +31,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.IBodyElement;
 import org.apache.poi.xwpf.usermodel.IRunElement;
+import org.apache.poi.xwpf.usermodel.UnderlinePatterns;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -42,7 +45,7 @@ import com.eddiedunn.greek.data.VerseFile;
 
 public class CU {
 
-
+	public static final String IJ = "18:03 18:04 18:05 18:06 18:07 18:08 18:09 18:10 18:11 18:12 19:02 19:03 19:04 19:05 19:06 19:07";
 	public static final String newline = System.getProperty("line.separator");
 	private static final String outliers = "'001','002','041','061','083','091','092','094','101','104','106','107','110','205','216','217','301','303','310','315','401','404','405','504','506','610','611','613','618','620','621','628','631','704','807'";
 	private static final String outlierHalf = "'001','002','003','004','005','006','041','061','081','083','091','092','093','094','101','103','104','105','106','107','108','110','114','202','203','205','207','213','216','217','301','302','303','304','305','309','310','315','401','403','404','405','411','503','505','504','506','507','510','605','607','610','611','613','614','618','620','621','625','626','628','631','704','802','807'";
@@ -60,13 +63,14 @@ public class CU {
 	public static final String findLinesInNewFormatRegEx = "[0-9]c*\\s*\\)|[0-9]c*\\s*\\]";
 	public static final String metadataParenBlocks= "\\([^0-9\\(]+\\)";
 	//public static final String metadataSquareBracketBlocks= "\\[[^0-9\\[]+\\]";
-	public static final String metadataSquareBracketBlocks= "\\[[^\\[]+?\\]";
+	//public static final String metadataSquareBracketBlocks= "\\[[^\\[]+?\\]";
+	public static final String metadataSquareBracketBlocks= "\\[+.*\\]+";
 	public static final String checkForNumberOrEngChar = "[0-9a-zA-Z]+";
 	public static final String checkForForwardSlash = "[\\/]+";
 	public static final String checkForTeePee = "\\/.+?\\\\";
 	public static final String checkForNotNumbersOrc = "[^0-9c]+";
 	//public static final String numberTokenMatch = "\\s+[0-9]+\\s+|\\s+[0-9]+c\\s+|\\s+[0-9]+-[0-9]+\\s+|\\s+[0-9]+-[0-9]+c\\s+|\\s+[0-9]c+-[0-9]+c\\s+|\\s+[0-9]+-[0-9]+\\s+|\\s+[0-9]+$|\\s+[0-9]c$";
-	public static final String numberTokenMatch = "\\s+[0-9]{2,3}c{0,1}\\s+|\\s+[0-9]{2,3}c{1}-[0-9]{2,3}c{0,1}\\s+";
+	public static final String numberTokenMatch = "[0-9]{2,3}c{0,1}";
 	public static final int minVerseLength=3;
 	public static final int minDocumentLength=75;
 	public static final int minChapLength=10;
@@ -150,6 +154,18 @@ public class CU {
 		
 		
 	}*/	
+	
+	public static boolean isIJ(int chap, int verse){
+		String[] ij = CU.IJ.split(" ");
+		for (String v : ij){
+			String[] chap_verse = v.split(":");
+			int c1 = Integer.valueOf(chap_verse[0]);
+			int v1 = Integer.valueOf(chap_verse[1]);
+			if ( c1 == chap && v1==verse )
+				return true;
+		}
+		return false;
+	}	
     public static void mergeMapCount(SortedMap<String, Integer> original,
     	    SortedMap<String, Integer> oneToAdd) {
     	for (Map.Entry<String, Integer> o : oneToAdd.entrySet()) {
@@ -208,7 +224,7 @@ public class CU {
 		XWPFDocument doc = null;
 		try {
 			//String fileName = System.getenv("USERPROFILE")+"\\workspace\\greektext\\data\\test\\PJ 06\\BDGZ 6 rev\\BDGZ 6 09\\BDGZ06 09 verse.doc";
-			System.out.println(fileName);
+			//System.out.println(fileName);
 			FileInputStream fs = new FileInputStream(fileName);
 			//POIFSFileSystem fs = new POIFSFileSystem(fis);
 	        doc = new XWPFDocument(fs);			        
@@ -221,19 +237,32 @@ public class CU {
 		List<XWPFParagraph> paragraphs =  doc.getParagraphs();
 		String chap  = fileName.split(" ")[1];
 		String verse = fileName.split(" ")[2].substring(0, 2);
-		System.out.println(chap+":"+verse);
+		String chap_verse = chap+":"+verse;
+		//System.out.println(chap+":"+verse);
+		
+		boolean isIJoseph = false;
+		if ( IJ.contains(chap_verse)){
+			isIJoseph = true;
+			//System.out.println("FOUND IJ doc");
+		}
+			
 		String fullText = new String();
 		ArrayList<String> baseTextLines = new ArrayList<String>();
 		for (XWPFParagraph para : paragraphs){
 			List<XWPFRun> runs =  para.getRuns();
 			boolean bold =false;
+			boolean underlined = false;
 			ArrayList<String> paraLine = new ArrayList<String>();
 			if( runs != null ) {
 				for( XWPFRun r : runs ){
-					
+					UnderlinePatterns patt = r.getUnderline();
+					if ( "SINGLE".equals(patt.toString())) {
+						underlined = true;
+					}
 					if( r.isBold() ){
 						bold=true;
 					}
+					
 					paraLine.add(r.getText(0));
 					//System.out.print(r.getText(0));
 				}
@@ -243,21 +272,47 @@ public class CU {
 			}
 			String lineToAdd = new String();
 
-			
-			for (String str : paraLine){
-				lineToAdd= lineToAdd+str;
-				//System.out.print(str);
+			if( ! isIJoseph ) { // "normal" verse file (no underlined base text)
+				if ( ! underlined ) {
+					for (String str : paraLine){
+						lineToAdd= lineToAdd+str;
+						//System.out.print(str);
+					}
+					if ( bold ){
+						baseTextLines.add(lineToAdd.trim());
+						//System.out.print("BASE: ");
+					}			
+					//System.out.println(lineToAdd);
+//					if( lineToAdd.contains("[") ){
+//						System.out.println("B: "+lineToAdd.trim());
+//						System.out.println("A: "+lineToAdd.trim().replaceAll("\\[([^\\]]+)]+", ""));
+//					}					
+					fullText = fullText + "\n" + lineToAdd.trim().replaceAll("\\[([^\\]]+)]+", "");
+				}
+			} else { // is IJoseph
+				for (String str : paraLine){
+					lineToAdd= lineToAdd+str;
+					//System.out.print(str);
+				}
+				if ( underlined  ){
+					if ( ! (lineToAdd.startsWith("18") || lineToAdd.startsWith("19")) ){
+						baseTextLines.add(lineToAdd.trim());
+						//System.out.print("BASE: ");
+					}
+				}			
+				//System.out.println(lineToAdd);
+
+//				if( lineToAdd.contains("[") ){
+//					System.out.println("B: "+lineToAdd.trim());
+//					System.out.println("A: "+lineToAdd.trim().replaceAll("\\[([^\\]]+)]+", ""));
+//				}
+				
+				fullText = fullText + "\n" + lineToAdd.trim().replaceAll("\\[([^\\]]+)]+", "");				
 			}
-			if ( bold == true ){
-				baseTextLines.add(lineToAdd.trim());
-				//System.out.print("BASE: ");
-			}			
-			//System.out.println(lineToAdd);
-			fullText = fullText + "\n" + lineToAdd.trim();
 		}
 		//XWPFWordExtractor we = new XWPFWordExtractVerseFile returnValue = new VerseFile();
+		// remove all [] blocks
 
-		
 		return new VerseFile(chap+":"+verse, baseTextLines, fullText,fileName);
 		 
 	}
@@ -269,6 +324,20 @@ public static boolean checkVerseString(String stringToCheck){
     
     return returnvalue;
 }
+
+public static boolean checkForOnlyNumbers(String stringToCheck){
+    boolean returnvalue = false;
+	String pattern = "^ *[0-9][0-9 ]*$";
+	Pattern r = Pattern.compile(pattern);
+	Matcher m = r.matcher(stringToCheck);
+	
+
+    if( m.find() )
+    	returnvalue = true;
+    
+    return returnvalue;
+}
+
 	public static  void writeMatrixToFileWithHeaders(double[][] matrixToWrite,String[] colNames,String[] rownames, String fileName){
 		BufferedWriter out = null;
 		try {
@@ -313,12 +382,13 @@ public static boolean checkVerseString(String stringToCheck){
         sorted_map.putAll(map);
 		try {
 	        out = new BufferedWriter(new OutputStreamWriter
-	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
                 //(new FileOutputStream(System.getenv("USERPROFILE")+"\\Documents\\wordCount.csv"),"UTF8"));
 	        
 	        for (SortedMap.Entry<String, Integer> o : sorted_map.entrySet()) {
 	        	if(o.getValue().intValue() > 1)
 	        	out.write(o.getKey()+","+o.getValue().intValue()+"\n");
+
 	        }
 	        
 		} catch (Exception e) {
@@ -333,7 +403,7 @@ public static boolean checkVerseString(String stringToCheck){
 		BufferedWriter out = null;
 		try {
 	        out = new BufferedWriter(new OutputStreamWriter
-	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
             //(new FileOutputStream(System.getenv("USERPROFILE")+"\\Documents\\wordCount.csv"),"UTF8"));
 	        
 	        for (SortedMap.Entry<Integer, String> o : mapToWrite.entrySet()) {
@@ -350,11 +420,12 @@ public static boolean checkVerseString(String stringToCheck){
 	}		
 	
 	public static  void writeVectorToFile(String[] vectorToWrite, String fileName){
+		//System.out.println("vectorToWrite length: " + vectorToWrite.length + " Filename: " + fileName);
 		BufferedWriter out = null;
 		StringBuffer buf = new StringBuffer();
 		try {
 	        out = new BufferedWriter(new OutputStreamWriter
-	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+	        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
             //(new FileOutputStream(System.getenv("USERPROFILE")+"\\Documents\\wordCount.csv"),"UTF8"));
 	        
 	        for(String s : vectorToWrite){
@@ -370,6 +441,12 @@ public static boolean checkVerseString(String stringToCheck){
 		}		
 	}		
 	public static void printStringArrayList(ArrayList<String> list){
+		for(String str:list){
+			System.out.print(str+" ");
+		}
+		System.out.println();
+	}
+	public static void printStringArray(String[] list){
 		for(String str:list){
 			System.out.print(str+" ");
 		}

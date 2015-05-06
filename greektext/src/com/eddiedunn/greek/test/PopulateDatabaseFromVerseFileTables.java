@@ -22,23 +22,26 @@ public class PopulateDatabaseFromVerseFileTables {
      * @param args
      */
     public static void main(String[] args) {
-
-	// successful outcome requires this reset to be ran each time!
-	resetTables();
-	
-	// populate manuscript table and return map of manuscript directory names and db key values
-	SortedMap<String,Integer> manuscriptNamesToManuscriptIDs =  populateManuscripts(getUniqueManuscripts());
-	
-
-
-	// populate chapter table and return map of chapterNumbers and a map of <Integer,Integer> containing manuscriptids and chapterids corresponding to chapternumber in key 
-	//SortedMap<Integer, SortedMap<Integer,Integer>> chapterNumbersToManuscriptIDsToChapterIDs = populateChapters(manuscriptNamesToManuscriptIDs);
-
-	
-	// populate verse table
-	populateVerses(manuscriptNamesToManuscriptIDs);
+		
+    	runPopulateVerses();
 	
     }   
+    public static void runPopulateVerses(){
+    	// successful outcome requires this reset to be ran each time!
+    	resetTables();
+    	
+    	// populate manuscript table and return map of manuscript directory names and db key values
+    	SortedMap<String,Integer> manuscriptNamesToManuscriptIDs =  populateManuscripts(getUniqueManuscripts());
+    	
+    	
+    	
+    	// populate chapter table and return map of chapterNumbers and a map of <Integer,Integer> containing manuscriptids and chapterids corresponding to chapternumber in key 
+    	//SortedMap<Integer, SortedMap<Integer,Integer>> chapterNumbersToManuscriptIDsToChapterIDs = populateChapters(manuscriptNamesToManuscriptIDs);
+
+    	
+    	// populate verse table
+    	populateVerses(manuscriptNamesToManuscriptIDs);    	
+    }
     private static void populateVerses(SortedMap<String,Integer> manuscriptNamesToManuscriptIDs){
 	
 
@@ -49,28 +52,68 @@ public class PopulateDatabaseFromVerseFileTables {
 
 	    //System.out.println(manuscriptIDsToChapterIds);
 	    for(int verse = 1; verse<=numVerses;verse++){
-	    
+			try {
+				Thread.sleep(500);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 
 	    // now get versefilelines for this chapter and verse
 	    ArrayList<VerseFileLine> verseFileLines = getVerseFileLines(chapter,verse);
 	    
 	    SortedMap<String, StringBuffer> manuscriptNameToVerseText = new TreeMap<String, StringBuffer>();
 	    
-	    for(VerseFileLine fl : verseFileLines){
-			String textToApply = fl.getText();
-			if( textToApply.length() > CU.minVerseLength){
-			if (fl.isAddition())
-				textToApply = fl.getCurrentBaseText() + " " + fl.getText();
 
-			for (String manuscriptNumber : fl.getManuScriptNumbers()) {
-				if (manuscriptNameToVerseText.containsKey(manuscriptNumber.trim())) {
-					manuscriptNameToVerseText.get(manuscriptNumber.trim()).append(textToApply);
-				} else {
-					manuscriptNameToVerseText.put(manuscriptNumber.trim(), new StringBuffer());
-					manuscriptNameToVerseText.get(manuscriptNumber.trim()).append(textToApply);
+	    for(VerseFileLine fl : verseFileLines){
+
+			String textToApply = fl.getText();
+
+			if( ! "[]".equals(textToApply) && ! "-".equals(textToApply)){
+/*				if (fl.isAddition()){
+					textToApply = fl.getCurrentBaseText() + " " + fl.getText();
 				}
-			}
-			}
+				// if we have a number line and previous was base text
+				// then  we can grab the base text and if not IJ add bodmer to the list
+				else*/ if ( textToApply.length() == 0  && fl.isPrevBaseText()){
+					textToApply = fl.getCurrentBaseText();
+					if ( ! CU.isIJ(chapter, verse))
+						fl.addManuscript("031");
+					//System.out.println("number only line: "+fl.getVerseFileLineid());
+				}					
+				//TODO: Need to handle case where there is bodmer no number line
+				else if( textToApply.length() > 0 && fl.isPrevBaseText() && ! CU.isIJ(chapter, verse)){
+					// need to add bodmer by itself?
+					if (manuscriptNameToVerseText.containsKey("031")) {
+						manuscriptNameToVerseText.get("031").append(fl.getCurrentBaseText() +' ');
+					} else {
+						manuscriptNameToVerseText.put("031", new StringBuffer());
+						manuscriptNameToVerseText.get("031").append(fl.getCurrentBaseText() + ' ');
+					}				
+				}
+/*				System.out.println("***************************************************");
+				System.out.println("processing: chap:" + fl.getChapter() + " verse:" + fl.getVerse() + " vflid: " + fl.getVerseFileLineid());
+				System.out.println("isBaseText? "+fl.isBaseText());
+				System.out.println("isPrevBaseText? "+fl.isPrevBaseText());
+				System.out.println("textToApply: *" + textToApply + "*");
+				System.out.println("currentBase: "+ fl.getCurrentBaseText());
+				System.out.print("manuscriptsToApply: " );
+				CU.printStringArray(fl.getManuScriptNumbers());	*/
+				
+				
+				
+				for (String manuscriptNumber : fl.getManuScriptNumbers()) {
+					if (manuscriptNameToVerseText.containsKey(manuscriptNumber.trim())) {
+						//System.out.println("Manuscript: "+ manuscriptNumber.trim() +" Adding: "+textToApply);
+						//System.out.println("To: "+manuscriptNameToVerseText.get(manuscriptNumber.trim()).toString());
+						manuscriptNameToVerseText.get(manuscriptNumber.trim()).append(textToApply +' ');
+					} else {
+						manuscriptNameToVerseText.put(manuscriptNumber.trim(), new StringBuffer());
+						//System.out.println("Manuscript: "+ manuscriptNumber.trim() +" Adding: "+textToApply+ " TO NEW");
+						manuscriptNameToVerseText.get(manuscriptNumber.trim()).append(textToApply + ' ');
+					}
+				}
+				//System.out.println("***************************************************");				
+				}
 	    }
 	    
 	    
@@ -84,8 +127,9 @@ public class PopulateDatabaseFromVerseFileTables {
 		if( matcher.matches() )
 		    System.out.println("english char or num in chap "+chapter+": "+m.getKey()+" "+m.getValue());
 		
-		if(m2.matches())
+		if(m2.matches()){
 		    System.out.println("non number or c in manuscript keys in chap:"+chapter+" verse: "+verse+" key: "+m.getKey());
+		}
 		
 	    }
 	    
@@ -97,14 +141,15 @@ public class PopulateDatabaseFromVerseFileTables {
 			// need to get chapterid for this manuscript and chapter
 			if( m.getValue().toString().length() > CU.minVerseLength){
 			if( ! manuscriptNamesToManuscriptIDs.containsKey(m.getKey()) ){
-			
+			 
 			    System.out.println("problem: *"+m.getKey()+"* chap: "+chapter+" verse: "+verse);
+			    System.out.println(m.getValue().toString());
 			}
 			int currentManuscriptID = manuscriptNamesToManuscriptIDs.get(m.getKey());
 			
 	
 			//System.out.println(m.getKey()+" manscrpid: "+currentManuscriptID+" chapterid: "+chapterid);
-			insertVerseRecord(currentManuscriptID,chapter,verse,m.getValue().toString() );
+			insertVerseRecord(currentManuscriptID,chapter,verse,m.getValue().toString().replaceAll(" +", " ") );
 		    }
 	    }
 	    } // end verse loop
@@ -161,14 +206,16 @@ public class PopulateDatabaseFromVerseFileTables {
 	        stmt = con.createStatement();
 	        
 	        
-	        rs = stmt.executeQuery("select vfl.versefilelineid,vf.chapid,vf.verseid,vfl.isbasetext,vfl.text,vfl.ordertoprocess from versefilelines vfl inner join versefiles vf on vfl.versefileid=vf.versefileid where vf.chapid="+chapter+" AND vf.verseid="+verse+" order by vfl.ordertoprocess;");
+	        rs = stmt.executeQuery("select vfl.versefilelineid,vf.chapid,vf.verseid,vfl.isbasetext,vfl.text,vfl.ordertoprocess,vfl.prevbasetext from versefilelines vfl inner join versefiles vf on vfl.versefileid=vf.versefileid where vf.chapid="+chapter+" AND vf.verseid="+verse+" order by vfl.versefilelineid;");
 	        String currentBaseText = "";
 	        while(rs.next()){
 
-	        	if( rs.getBoolean(4)) { // is baseText, grab line and goto next
+	        	if( rs.getBoolean(4) ) { // is baseText 
 	        		currentBaseText = rs.getString(5);
+	        		// if it is not IJ then add
+
 	        		//System.out.println("currentBaseText: "+currentBaseText);
-	        		rs.next();
+	        		
 	        	}else{ // not baseText
 	        		Matcher newFormatBlocksMatcher = newFormatBlock.matcher(rs.getString(5));	        		
 	        		if(newFormatBlocksMatcher.find() ){	  
@@ -177,8 +224,9 @@ public class PopulateDatabaseFromVerseFileTables {
 	        		}
 	        		
 		        	String[] splitLine = splitLine(rs.getString(5)); 
-		        	//System.out.println(splitLine[0]+"  currentBaseText: "+currentBaseText);	   
-		        	returnValue.add(new VerseFileLine(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getBoolean(4), splitLine[0],splitLine[1], currentBaseText));
+		        	// if prevBaseText  then add bodmer to list
+		        	// if prevBaseTExt and splitLine[0].length == 0 then
+		        	returnValue.add(new VerseFileLine(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getBoolean(4), rs.getBoolean(7), splitLine[0],splitLine[1], currentBaseText));
 	        	}
 	            
 	        }
@@ -353,7 +401,7 @@ public class PopulateDatabaseFromVerseFileTables {
 	        StringBuffer buf = new StringBuffer();
 	        while (result.next() ){
 	            buf.append(result.getString(1)+" ");
-	           // System.out.println(result.getString(1));
+	           //System.out.println(result.getString(1));
 	        }
 	        
 	        Pattern pattern = Pattern.compile(CU.numberTokenMatch);       
@@ -362,32 +410,22 @@ public class PopulateDatabaseFromVerseFileTables {
 	        while(matcher.find()){	          
 	           ArrayList<String> tmpscriptNums = new ArrayList<String>();
 	           String token = matcher.group().trim();
-	           
-	           if( token.contains("-")){
-	               if( token.contains("c"))
-	        	   System.out.println("correction in range block");
-	               String[] startEnd = token.split("-");
-			int startNum = Integer.parseInt(startEnd[0]);
-			int endNum = Integer.parseInt(startEnd[1]);
-			for(int i=startNum;i<=endNum;i++){				
-			    tmpscriptNums.add(String.format("%03d", i));
-			}
-	           }	           
-	           else {
-	               if( ((token.endsWith("c")&& token.length() == 3) || (token.endsWith("C")&& token.length() == 3)) ||token.length() == 2  ){
+	           //System.out.println(token);
+	               if( (token.endsWith("c")&& token.length() == 3) || token.length() == 2  ){
 	        	   
 	        	   token = "0"+token;
 	        	   //System.out.println(token);
 	               }
 
 	               tmpscriptNums.add(token.trim());
-	           }
+	           
 	            for( String m : tmpscriptNums){        		        	
 		            if( ! manuscripts.containsKey(m.trim()) )
 		        	manuscripts.put(m.trim(),m.trim() );
 		            //System.out.println(matcher.group());	        	
 	            }
-
+	            //manually add in bodmer
+	            manuscripts.put("031", "031");
 	        }
 
 
@@ -434,29 +472,14 @@ public class PopulateDatabaseFromVerseFileTables {
 	        while(matcher.find()){	          
 	           ArrayList<String> tmpscriptNums = new ArrayList<String>();
 	           String token = matcher.group().trim();
-
-	           if( token.contains("-")){
-	               if( token.contains("c"))
-	        	   System.out.println("correction in range block");
-	               String[] startEnd = token.split("-");
-			int startNum = Integer.parseInt(startEnd[0]);
-			int endNum = Integer.parseInt(startEnd[1]);
-			for(int i=startNum;i<=endNum;i++){				
-			    tmpscriptNums.add(String.format("%03d", i));
-			}
-	           }	           
-	           else {
-	        	   // sanity check
-	        	   String rawNum = token.replaceAll("c", "");
-	        	   int tmpNum = Integer.parseInt(rawNum);
 	        	   
-	               if( ((token.contains("c")&& token.length() == 3) || (token.contains("C")&& token.length() == 3)) ||token.length() == 2  ){
+	               if( ((token.contains("c")&& token.length() == 3))  || token.length() == 2  ){
 	        	   
 	        	   token = "0"+token;
 	        	   //System.out.println(token);
 	               }
 	               tmpscriptNums.add(token);
-	           }
+	           
 	            for( String m : tmpscriptNums){
 	        		        	
 		            if( ! manuscripts.containsKey(m.trim()) )

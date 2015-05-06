@@ -27,10 +27,10 @@ public class Corpus {
     
 
     public Corpus(String initialSQL, boolean loadChapters) {
-    this.loadChapters = loadChapters;
-    this.writeGramsToDB=false;
-    this.initialSQL=initialSQL;
-	 this.maxGramSize=0;
+	    this.loadChapters = loadChapters;
+	    this.writeGramsToDB=false;
+	    this.initialSQL=initialSQL;
+		this.maxGramSize=0;
     }
     public void setLoadGramsIntoDB(){
     	this.writeGramsToDB=true;
@@ -53,11 +53,14 @@ public class Corpus {
     	int testMod = manuscriptids.size()/4;
     	for(Integer mid: manuscriptids){
     		count++;
+    		//System.out.println("Starting: "+mid.toString());
     		Manuscript tmp = getManuscript(mid);
-    		if(tmp != null ){
+    		if(tmp.equals(null)  ){}
+    		else{
     			if( tmp.getMaxGramSize() > maxGramSize)
     				maxGramSize = tmp.getMaxGramSize();
-    		manuScripts.put(tmp.getID(),tmp);    		
+    			//System.out.println(tmp.getID()+" "+ tmp.getManuscriptID());
+    			manuScripts.put(tmp.getID(),tmp);    		
     		}
     		if( count % testMod == 0 ){
     			System.out.println("loaded "+count+" manuscripts current: "+tmp.getID());    			
@@ -89,7 +92,7 @@ public class Corpus {
     }
     private Manuscript getManuscript(Integer manuscriptid){
     	Manuscript returnvalue = null;
-    	
+    	//System.out.println("man#: "+manuscriptid.toString());
         try {
             Class.forName("com.mysql.jdbc.Driver");
         } catch (ClassNotFoundException ex) {
@@ -113,8 +116,7 @@ public class Corpus {
 	        	buf.append(result.getString(2)+' ');
 	        	name = result.getString(1);
 	        }
-	        TreeMap<Integer, String> tmpChapText = new TreeMap<Integer,String>();
-	        
+	        TreeMap<Integer, String> tmpChapText = new TreeMap<Integer,String>();	        
 	        if(loadChapters && name != null && buf.toString().length() > CU.minDocumentLength){
 	        	con1 = DriverManager.getConnection(CU.db_connstr, CU.db_username, CU.db_password);
 	        	tmpChapText = new TreeMap<Integer,String>();
@@ -124,20 +126,26 @@ public class Corpus {
 	    	        rs = stmt1.executeQuery("select m.name,v.verse_text,v.chapternumber,v.versenumber from verse v inner join manuscript m on m.manuscriptid=v.manuscriptid where v.manuscriptid="+manuscriptid+" AND v.chapternumber="+chap+" order by v.chapternumber,v.versenumber;");
 	    	        StringBuffer chapBuf = new StringBuffer();
 	    	        
+
 	    	        while(rs.next()){
 	    	        	chapBuf.append(rs.getString(2)+' ');
 	    	        	
 	    	        }	
+	    	        
 	    	       // System.out.println(chapBuf.toString());
-	    	        if( chapBuf.toString().length() > CU.minChapLength )	    	        
-	    	        tmpChapText.put(new Integer(chap), chapBuf.toString());
+	    	        if( chapBuf.toString().length() > CU.minChapLength )	{    	        
+	    	        tmpChapText.put(new Integer(chap), chapBuf.toString().replaceAll("\\[\\]", ""));
+	    	        //System.out.println(chapBuf.toString().replaceAll("\\[\\]", ""));
+	    	        }
+
 	        	}
 	        	
-	        	
+	        	//System.out.println("finshed chapter loading: "+name+" id:"+manuscriptid.toString());
+	        	//System.out.println(buf.toString().replaceAll("\\[\\]", ""));
 	        	
 	        		
 	        }	        
-	        returnvalue = new Manuscript(writeGramsToDB,loadChapters, manuscriptid,name,buf.toString(), "fam", tmpChapText);
+	        returnvalue = new Manuscript(writeGramsToDB,loadChapters, manuscriptid,name,buf.toString().replaceAll("\\[\\]", ""), "fam", tmpChapText);
 	        
 	} catch (Exception e) {
 	   e.printStackTrace();
@@ -552,7 +560,7 @@ private void resetValuesforThisManuscriptInDB(){
     	BufferedWriter out = null;
     	try {
             out = new BufferedWriter(new OutputStreamWriter
-            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
+            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));	
 	
 	SortedMap<Integer, String> chapText = getChapDocs(chap);
 	double charGramSum = 0;
@@ -585,7 +593,7 @@ private void resetValuesforThisManuscriptInDB(){
     	BufferedWriter out = null;
     	try {
             out = new BufferedWriter(new OutputStreamWriter
-            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));	
+            		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));	
 	
 	double charGramSum = 0;
 	for (Map.Entry<String, Manuscript> mi : this.manuScripts.entrySet()) {
@@ -767,7 +775,7 @@ private void resetValuesforThisManuscriptInDB(){
 	BufferedWriter out = null;
 	try {
         out = new BufferedWriter(new OutputStreamWriter
-        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
 
         
 	
@@ -798,7 +806,7 @@ private void resetValuesforThisManuscriptInDB(){
 	BufferedWriter out = null;
 	try {
         out = new BufferedWriter(new OutputStreamWriter
-        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
 
         SortedMap<String,String> tmpChapDocs =  getChapDocsName(chap);
 	
@@ -831,7 +839,7 @@ private void resetValuesforThisManuscriptInDB(){
 	BufferedWriter out = null;
 	try {
         out = new BufferedWriter(new OutputStreamWriter
-        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greektext\\output\\"+fileName+".txt")));
+        		(new FileOutputStream(System.getenv("USERPROFILE")+"\\workspace\\greek-nlp\\greektext\\output\\"+fileName+".txt")));
         StringBuffer colHeaders = new StringBuffer();
         
         for (Map.Entry<String, Integer> grandGrams : tmpGrandNCharGrams.entrySet()) {
